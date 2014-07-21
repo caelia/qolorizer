@@ -7,6 +7,31 @@
         (import extras)
         (use imlib2)
 
+(define (check255/2 a b)
+  (or (and (>= a 0)
+           (<= a 255)
+           (>= b 0)
+           (<= b 255))
+      (error (sprintf "Invalid input: ~A, ~A\n" a b))))
+
+(define (check-hsv/2 h0 s0 v0 h1 s1 v1)
+  (or (and (>= h0 0)
+           (<= h0 360)
+           (>= h1 0)
+           (<= h1 360)
+           (>= s0 0)
+           (<= s0 1)
+           (>= v0 0)
+           (<= v0 1)
+           (>= s1 0)
+           (<= s1 1)
+           (>= v1 0)
+           (<= v1 1))
+      (error
+        (sprintf
+          "Invalid input| h0: ~A, s0: ~A, v0: ~A, h1: ~A, s1: ~A, v1: ~A\n"
+          h0 s0 v0 h1 s1 v1))))
+
 (define (x>int x)
   (inexact->exact (round x)))
 
@@ -98,69 +123,97 @@
         (badspec)))))
 
 (define (normal i m)
+  (check255/2 i m)
   m)
 
 (define (dissolve i m)
+  (check255/2 i m)
   (if (= (random 2) 0) i m))
 
 (define (multiply i m)
+  (check255/2 i m)
   (x>int (/ (* i m) 255)))
 
 (define (screen i m)
+  (check255/2 i m)
   (x>int (- 255 (/ (* (- 255 m) (- 255 i)) 255))))
 
 (define (overlay i m)
+  (check255/2 i m)
   (x>int (* (/ i 255) (+ i (* (/ (* 2 m) 255) (- 255 i))))))
 
 (define (hard-light i m)
+  (check255/2 i m)
   (x>int
     (if (> m 128)
       (- 255 (/ (* (- 255 (* 2 (- m 128))) (- 255 i)) 256))
       (/ (* 2 m i) 256))))
 
 (define (soft-light i m)
+  (check255/2 i m)
   (x>int (* (/ (+ (* (- 255 i) m) (screen i m)) 255) i)))
 
 (define (dodge i m)
+  (check255/2 i m)
   (x>int (/ (* 256 i) (+ (- 255 m) 1))))
 
 (define (burn i m)
+  (check255/2 i m)
   (x>int (- 255 (/ (* 256 (- 255 i)) (+ m 1)))))
 
 (define (divide i m)
+  (check255/2 i m)
   (x>int (/ (* 256 i) (+ m 1))))
 
 (define (difference i m)
+  (check255/2 i m)
   (abs (- i m)))
 
 (define (addition i m)
+  (check255/2 i m)
   (min (+ i m) 255))
 
 (define (subtract i m)
+  (check255/2 i m)
   (max (- i m) 0))
 
-(define darken-only min)
+; (define darken-only min)
 
-(define lighten-only max)
+; (define lighten-only max)
+
+;; Temporary defs for debugging
+(define (darken-only i m)
+  (check255/2 i m)
+  (min i m))
+
+(define (lighten-only i m)
+  (check255/2 i m)
+  (max i m))
 
 (define (grain-extract i m)
+  (check255/2 i m)
   (max (min (+ (- i m) 128) 255) 0))
 
 (define (grain-merge i m)
+  (check255/2 i m)
   (max (min (- (+ i m) 128) 255) 0))
 
 (define (color hi si vi hm sm vm)
+  (check-hsv/2 hi si vi hm sm vm)
   (values hm sm vi))
 
 (define (hue hi si vi hm sm vm)
+  (check-hsv/2 hi si vi hm sm vm)
   (if (= sm 0)
     (values hi si vi)
     (values hm si vi)))
   
 (define (saturation hi si vi hm sm vm)
+  (check-hsv/2 hi si vi hm sm vm)
   (values hi sm vi))
 
 (define (value hi si vi hm sm vm)
+  (check-hsv/2 hi si vi hm sm vm)
   (values hi si vm))
 
 (define (blend/rgb ri gi bi rm gm bm mode)
