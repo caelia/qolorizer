@@ -1,5 +1,6 @@
 (module colorizer
-        (colorize)
+        *            ; exporting all just for development
+        ; (colorize)
         
         (import scheme chicken)
         (import data-structures)
@@ -56,7 +57,7 @@
       (values h s v))))
 
 (define (parse-color spec alpha)
-  (let ((s>n (lambda (s) (string->number (string-append "#" s))))
+  (let ((s>n (lambda (s) (string->number (string-append "#x" s))))
         (c>s (lambda (c) (list->string (list c c))))
         (badspec (lambda () (error (sprintf "Invalid color spec: '~A'" spec)))))
     (cond
@@ -200,7 +201,7 @@
                 (case method
                   ((source-over) (source-over ri gi bi ai rm gm bm am))
                   (else (error (sprintf "Unsupported compositing method: '~A'" method))))))
-    (color/rgba r g b a)))
+    (color/rgba (x>int r) (x>int g) (x>int b) (x>int (* a 255)))))
 
 (define (colorize src-img color-spec #!key (blend-mode 'normal) (alpha #f))
   (let* ((width (image-width src-img))
@@ -230,8 +231,8 @@
                               (case blend-class
                                 ((rgb) (blend/rgb ri gi bi rm gm bm blend-mode))
                                 ((hsv) (blend/hsv ri gi bi rm gm bm blend-mode)))))
-                (let ((final-color (composite ri gi bi ai rb rb bb am)))
-                  (image-draw-pixel dest final-color))))
+                (let ((final-color (composite ri gi bi (/ ai 255) rb rb bb am)))
+                  (image-draw-pixel dest final-color x y))))
               (vloop (+ y 1))))
           (hloop (+ x 1)))))
     dest))
