@@ -1,0 +1,8 @@
+*.c
+*.so
+*.o
+*.swp
+*.import.scm
+templates
+examples/.cache/*
+tests/*.html
