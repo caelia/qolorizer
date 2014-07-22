@@ -3,7 +3,5 @@
 *.o
 *.swp
 *.import.scm
-templates
-examples/.cache/*
-tests/*.html
-test/images/ref/
+tests/images/ref/
+*.pyc
