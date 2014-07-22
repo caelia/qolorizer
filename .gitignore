@@ -6,3 +6,4 @@
 templates
 examples/.cache/*
 tests/*.html
+test/images/ref/
