@@ -275,8 +275,8 @@
 (define (source-over ri gi bi ai rm gm bm am)
   (let* ((a (- 1 (* (- 1 am) (- 1 ai))))
          (f
-           (lambda (vi vm)
-             (/ (+ (* vm am) (* vi ai (- 1 am))) a))))
+           (lambda (ci cm)
+             (/ (+ (* cm am) (* ci ai (- 1 am))) a))))
     (values (f ri rm) (f gi gm) (f bi bm) a)))
 
 (define (composite ri gi bi ai rm gm bm am #!optional (method 'source-over))
