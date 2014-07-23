@@ -119,7 +119,7 @@
                           (and (not alpha)
                                (or (and (= len 5) (c>s (string-ref spec 4)))
                                    (and (= len 9) (substring spec 7 9))))))
-            (values (s>n r*) (s>n b*) (s>n g*)
+            (values (s>n r*) (s>n g*) (s>n b*)
                     (or (and a* (/ (s>n a*) 255))
                         (and alpha (verify alpha 1))
                         1.0)))))
@@ -159,17 +159,35 @@
       (- 255 (/ (* (- 255 (* 2 (- m 128))) (- 255 i)) 256))
       (/ (* 2 m i) 256))))
 
-(define (soft-light i m)
-  (check255/2 i m)
-  (x>int (* (/ (+ (* (- 255 i) m) (screen i m)) 255) i)))
+;; This formula seems completely broken
+; (define (soft-light i m)
+  ; (check255/2 i m)
+  ; (x>int (* (/ (+ (* (- 255 i) m) (screen i m)) 255) i)))
 
+;; Here is the W3C formula
+(define (soft-light i m)
+  (let ((i (/ i 255))
+        (m (/ m 255)))
+    (let ((res
+            (cond
+              ((and (> m 0.5) (> i 0.25))
+               (+ i (* (- (* 2 m) 1) (- (sqrt i) i))))
+              ((> m 0.5)
+               (+ i (* (- (* 2 m) 1) (- (* (+ (* (- (* 16 i) 12) i) 4) i) i))))
+              (else
+                (- i (* (- 1 (* 2 m)) i (- 1 i)))))))
+      (x>int (* 255 res)))))
+
+
+;; ???
 (define (dodge i m)
   (check255/2 i m)
-  (x>int (/ (* 256 i) (+ (- 255 m) 1))))
+  (clamp255 (x>int (/ (* 256 i) (+ (- 255 m) 1)))))
 
+;; ???
 (define (burn i m)
   (check255/2 i m)
-  (x>int (- 255 (/ (* 256 (- 255 i)) (+ m 1)))))
+  (clamp255 (x>int (- 255 (/ (* 256 (- 255 i)) (+ m 1))))))
 
 ;; 1. Based on test results, the formula in the GIMP manual matches
 ;;    program behavior, except values are constrained to 0 <= x <= 255.
