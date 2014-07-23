@@ -2,12 +2,20 @@
 (import extras)
 (use imlib2)
 
+(define (check255 x)
+  (or (and (>= x 0) (<= x 255))
+      (error (sprintf "Invalid input: ~A\n" x))))
+
 (define (check255/2 a b)
   (or (and (>= a 0)
            (<= a 255)
            (>= b 0)
            (<= b 255))
       (error (sprintf "Invalid input: ~A, ~A\n" a b))))
+
+(define (check-hsv h s v)
+  (or (and (>= h 0) (<= h 360) (>= s 0) (<= s 1) (>= v 0) (<= v 1))
+      (error (sprintf "Invalid input| h: ~A, s: ~A, v: ~A\n" h s v))))
 
 (define (check-hsv/2 h0 s0 v0 h1 s1 v1)
   (or (and (>= h0 0)
@@ -132,32 +140,41 @@
       (else
         (badspec)))))
 
-(define (normal i m)
-  (check255/2 i m)
-  m)
+(define (normal-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) m))
 
-(define (dissolve i m)
-  (check255/2 i m)
-  (if (= (random 2) 0) i m))
+(define (dissolve-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) (if (= (random 2) 0) i m)))
 
-(define (multiply i m)
-  (check255/2 i m)
-  (x>int (/ (* i m) 255)))
+(define (multiply-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) (x>int (/ (* i m) 255))))
 
-(define (screen i m)
-  (check255/2 i m)
-  (x>int (- 255 (/ (* (- 255 m) (- 255 i)) 255))))
+(define (screen-op m)
+  (check255 m) 
+  (let ((a (- 255 m)))
+    (lambda (i)
+      (check255 i)
+      (x>int (- 255 (/ (* a (- 255 i)) 255))))))
 
-(define (overlay i m)
-  (check255/2 i m)
-  (x>int (* (/ i 255) (+ i (* (/ (* 2 m) 255) (- 255 i))))))
+(define (overlay-op m)
+  (check255 m) 
+  (let ((a (* 2 m)))
+    (lambda (i)
+      (check255 i)
+      (x>int (* (/ i 255) (+ i (* (/ a 255) (- 255 i))))))))
 
-(define (hard-light i m)
-  (check255/2 i m)
-  (x>int
-    (if (> m 128)
-      (- 255 (/ (* (- 255 (* 2 (- m 128))) (- 255 i)) 256))
-      (/ (* 2 m i) 256))))
+(define (hard-light-op m)
+  (check255 m) 
+  (let ((a (* 2 (- m 128))))
+    (lambda (i)
+    (check255 i)
+    (x>int
+      (if (> m 128)
+        (- 255 (/ (* (- 255 a) (- 255 i)) 256))
+        (/ (* 2 m i) 256))))))
 
 ;; This formula seems completely broken
 ; (define (soft-light i m)
@@ -165,112 +182,136 @@
   ; (x>int (* (/ (+ (* (- 255 i) m) (screen i m)) 255) i)))
 
 ;; Here is the W3C formula
-(define (soft-light i m)
-  (let ((i (/ i 255))
-        (m (/ m 255)))
-    (let ((res
-            (cond
-              ((and (> m 0.5) (> i 0.25))
-               (+ i (* (- (* 2 m) 1) (- (sqrt i) i))))
-              ((> m 0.5)
-               (+ i (* (- (* 2 m) 1) (- (* (+ (* (- (* 16 i) 12) i) 4) i) i))))
-              (else
-                (- i (* (- 1 (* 2 m)) i (- 1 i)))))))
-      (x>int (* 255 res)))))
-
+(define (soft-light-op m)
+  (check255 m) 
+  (let* ((m* (/ m 255))
+         (a (- (* 2 m*) 1))
+         (b (- 1 (* 2 m*))))
+    (lambda (i)
+      (check255 i)
+      (let ((i* (/ i 255)))
+        (let ((res
+                (cond
+                  ((and (> m* 0.5) (> i* 0.25))
+                   (+ i* (* a (- (sqrt i*) i*))))
+                  ((> m* 0.5)
+                   (+ i* (* a (- (* (+ (* (- (* 16 i*) 12) i*) 4) i*) i*))))
+                  (else
+                    (- i* (* b i* (- 1 i*)))))))
+          (x>int (* 255 res)))))))
 
 ;; ???
-(define (dodge i m)
-  (check255/2 i m)
-  (clamp255 (x>int (/ (* 256 i) (+ (- 255 m) 1)))))
+(define (dodge-op m)
+  (check255 m) 
+  (let ((a (+ (- 255 m) 1)))
+    (lambda (i)
+      (check255 i)
+      (clamp255 (x>int (/ (* 256 i) a))))))
 
 ;; ???
-(define (burn i m)
-  (check255/2 i m)
-  (clamp255 (x>int (- 255 (/ (* 256 (- 255 i)) (+ m 1))))))
+(define (burn-op m)
+  (check255 m) 
+  (let ((a (+ m 1)))
+    (lambda (i)
+      (check255 i)
+      (clamp255 (x>int (- 255 (/ (* 256 (- 255 i)) a)))))))
 
 ;; 1. Based on test results, the formula in the GIMP manual matches
 ;;    program behavior, except values are constrained to 0 <= x <= 255.
-(define (divide i m)
-  (check255/2 i m)
-  (clamp255 (x>int (/ (* 256 i) (+ m 1)))))
+(define (divide-op m)
+  (check255 m) 
+  (let ((a (+ m 1)))
+    (lambda (i)
+      (check255 i)
+      (clamp255 (x>int (/ (* 256 i) a))))))
 
-(define (difference i m)
-  (check255/2 i m)
-  (abs (- i m)))
+(define (difference-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) (abs (- i m))))
 
-(define (addition i m)
-  (check255/2 i m)
-  (min (+ i m) 255))
+(define (addition-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) (min (+ i m) 255)))
 
-(define (subtract i m)
-  (check255/2 i m)
-  (max (- i m) 0))
+(define (subtract-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) (max (- i m) 0)))
 
 ; (define darken-only min)
 
 ; (define lighten-only max)
 
 ;; Temporary defs for debugging
-(define (darken-only i m)
-  (check255/2 i m)
-  (min i m))
+(define (darken-only-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) (min i m)))
 
-(define (lighten-only i m)
-  (check255/2 i m)
-  (max i m))
+(define (lighten-only-op m)
+  (check255 m) 
+  (lambda (i) (check255 i) (max i m)))
 
-(define (grain-extract i m)
-  (check255/2 i m)
-  (max (min (+ (- i m) 128) 255) 0))
+(define (grain-extract-op m)
+  (check255 m) 
+  (lambda (i)
+    (check255 i)
+    (max (min (+ (- i m) 128) 255) 0)))
 
-(define (grain-merge i m)
-  (check255/2 i m)
-  (max (min (- (+ i m) 128) 255) 0))
+(define (grain-merge-op m)
+  (check255 m) 
+  (lambda (i)
+    (check255 i)
+    (max (min (- (+ i m) 128) 255) 0)))
 
-(define (color hi si vi hm sm vm)
+(define (color-op hi si vi hm sm vm)
   (check-hsv/2 hi si vi hm sm vm)
   (values hm sm vi))
 
-(define (hue hi si vi hm sm vm)
+(define (hue-op hi si vi hm sm vm)
   (check-hsv/2 hi si vi hm sm vm)
   (if (= sm 0)
     (values hi si vi)
     (values hm si vi)))
   
-(define (saturation hi si vi hm sm vm)
+(define (saturation-op hi si vi hm sm vm)
   (check-hsv/2 hi si vi hm sm vm)
   (values hi sm vi))
 
-(define (value hi si vi hm sm vm)
+(define (value-op hi si vi hm sm vm)
   (check-hsv/2 hi si vi hm sm vm)
   (values hi si vm))
 
-(define (blend/rgb ri gi bi rm gm bm mode)
-  (let ((op (alist-ref
-              mode
-              `((normal . ,normal) (dissolve . ,dissolve)
-                (multiply . ,multiply) (screen . ,screen)
-                (overlay . ,overlay) (hard-light . ,hard-light)
-                (soft-light . ,soft-light) (dodge . ,dodge)
-                (burn . ,burn) (divide . ,divide)
-                (difference . ,difference) (addition . ,addition)
-                (subtract . ,subtract) (darken-only . ,darken-only)
-                (lighten-only . ,lighten-only) (grain-extract . ,grain-extract)
-                (grain-merge . ,grain-merge)))))
-    (values (x>int (op ri rm)) (x>int (op gi gm)) (x>int (op bi bm)))))
+(define (blend-op/rgb rm gm bm mode)
+  (let* ((mkop
+         (alist-ref
+            mode
+            `((normal . ,normal-op) (dissolve . ,dissolve-op)
+              (multiply . ,multiply-op) (screen . ,screen-op)
+              (overlay . ,overlay-op) (hard-light . ,hard-light-op)
+              (soft-light . ,soft-light-op) (dodge . ,dodge-op)
+              (burn . ,burn-op) (divide . ,divide-op)
+              (difference . ,difference-op) (addition . ,addition-op)
+              (subtract . ,subtract-op) (darken-only . ,darken-only-op)
+              (lighten-only . ,lighten-only-op) (grain-extract . ,grain-extract-op)
+              (grain-merge . ,grain-merge-op))))
+         (rop (mkop rm))
+         (gop (mkop gm))
+         (bop (mkop bm)))
+    (lambda (ri gi bi)
+      (values (x>int (rop ri)) (x>int (gop gi)) (x>int (bop bi))))))
 
-(define (blend/hsv ri gi bi rm gm bm mode)
-  (let-values (((hi si vi) (rgb>hsv ri gi bi))
-               ((hm sm vm) (rgb>hsv rm gm bm)))
-    (let ((op (alist-ref
-               mode
-               `((color . ,color)
-                 (hue . ,hue)
-                 (saturation . ,saturation)
-                 (value . ,value)))))
-      (let-values (((h s v) (op hi si vi hm sm vm)))
-        (hsv>rgb h s v))))) 
+(define (blend-op/hsv rm gm bm mode)
+  (let-values (((hm sm vm) (rgb>hsv rm gm bm)))
+    (let* ((mkop (alist-ref
+           mode
+           `((color . ,color-op)
+             (hue . ,hue-op)
+             (saturation . ,saturation-op)
+             (value . ,value-op))))
+           (op (mkop hm sm vm)))
+      (lambda (ri gi bi)
+        (let-values (((hi si vi) (rgb>hsv ri gi bi)))
+          (let-values (((h s v) (op hi si vi hm sm vm)))
+            (hsv>rgb h s v)))))))
 
 (define (source-over ri gi bi ai rm gm bm am)
   (let* ((a (- 1 (* (- 1 am) (- 1 ai))))
@@ -279,44 +320,49 @@
              (/ (+ (* cm am) (* ci ai (- 1 am))) a))))
     (values (f ri rm) (f gi gm) (f bi bm) a)))
 
-(define (composite ri gi bi ai rm gm bm am #!optional (method 'source-over))
-  (let-values (((r g b a)
-                (case method
-                  ((source-over) (source-over ri gi bi ai rm gm bm am))
-                  (else (error (sprintf "Unsupported compositing method: '~A'" method))))))
-    (color/rgba (x>int r) (x>int g) (x>int b) (x>int (* a 255)))))
+(define (composite-op am #!optional (method 'source-over))
+  (let ((op
+         (case method
+           ((source-over) source-over)
+           (else (error (sprintf "Unsupported compositing method: '~A'" method))))))
+    (lambda (ri gi bi ai rm gm bm)
+      (let-values (((r g b a) (op ri gi bi ai rm gm bm am)))
+        (color/rgba (x>int r) (x>int g) (x>int b) (x>int (* a 255)))))))
 
 (define (colorize src-img color-spec #!key (blend-mode 'normal) (alpha #f))
-  (let* ((width (image-width src-img))
-         (height (image-height src-img))
-         (dest (image-create width height))
-         (blend-class
-           (cond
-             ((memv
-               blend-mode
-               '(normal dissolve multiply screen overlay hard-light
-                 soft-light dodge burn divide difference addition
-                 subtract darken-only lighten-only grain-extract grain-merge))
-               'rgb)
-             ((memv
-               blend-mode
-               '(color hue saturation value))
-               'hsv)
-             (else
-               (error (sprintf "Unknown blend mode: '~A'" blend-mode))))))
-    (let-values (((rm gm bm am) (parse-color color-spec alpha)))
+  (let-values (((rm gm bm am) (parse-color color-spec alpha)))
+    (let* ((width (image-width src-img))
+           (height (image-height src-img))
+           (dest (image-create width height))
+           (blend-class
+             (cond
+               ((memv
+                 blend-mode
+                 '(normal dissolve multiply screen overlay hard-light
+                   soft-light dodge burn divide difference addition
+                   subtract darken-only lighten-only grain-extract grain-merge))
+                 'rgb)
+               ((memv
+                 blend-mode
+                 '(color hue saturation value))
+                 'hsv)
+               (else
+                 (error (sprintf "Unknown blend mode: '~A'" blend-mode)))))
+           (blend 
+             (case blend-class
+               ((rgb) (blend-op/rgb rm gm bm blend-mode))
+               ((hsv) (blend-op/hsv rm gm bm blend-mode))))
+           (composite
+             (composite-op am)))
       (let hloop ((x 0))
         (when (< x width)
           (let vloop ((y 0))
             (when (< y height)
               (let-values (((ri gi bi ai) (image-pixel/rgba src-img x y)))
-                (let-values (((rb gb bb)
-                              (case blend-class
-                                ((rgb) (blend/rgb ri gi bi rm gm bm blend-mode))
-                                ((hsv) (blend/hsv ri gi bi rm gm bm blend-mode)))))
-                (let ((final-color (composite ri gi bi (/ ai 255) rb rb bb am)))
-                  (image-draw-pixel dest final-color x y))))
+                (let-values (((rb gb bb) (blend ri gi bi)))
+                  (let ((final-color (composite ri gi bi (/ ai 255) rb rb bb)))
+                    (image-draw-pixel dest final-color x y))))
               (vloop (+ y 1))))
-          (hloop (+ x 1)))))
-    dest))
+          (hloop (+ x 1))))
+      dest)))
 
