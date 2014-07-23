@@ -14,20 +14,14 @@
            ((= (car l1*) (car l2*)) (loop (cdr l1*) (cdr l2*)))
            (else #f)))))
 
-; (define (legal255 ok x)
-;   (if (and (>= x 0) (<= x 255))
-;     ok
-;     x))
-; 
-; (define (legal-hsv ok hsv)
-;   (let ((h (car hsv))
-;         (s (cadr hsv))
-;         (v (caddr hsv)))
-;     (if (and (>= h 0) (<= h 360)
-;              (>= s 0) (<= s 1)
-;              (>= v 0) (<= v 1))
-;       ok
-;       hsv)))
+(define (list-approx= l1 l2)
+  (let ((approx= (lambda (x y) (< (abs (- x y)) 0.01))))
+    (and (= (length l1) (length l2))
+         (let loop ((l1* l1) (l2* l2))
+           (cond
+             ((null? l1*) #t)
+             ((approx= (car l1*) (car l2*)) (loop (cdr l1*) (cdr l2*)))
+             (else #f))))))
 
 (define (legal255 _ x)
   (and (>= x 0) (<= x 255)))
@@ -52,46 +46,199 @@
        ...
        (current-test-comparator default-comparator)))))
 
+(define-syntax with-epsilon
+  (syntax-rules ()
+    ((_ eps proc ...)
+     (let ((default-epsilon (current-test-epsilon)))
+       (current-test-epsilon eps)
+       proc
+       ...
+       (current-test-epsilon default-epsilon)))))
+
 (test-group "[1] parse-color: bad input causes errors"
   (test-error
-    "1.01: (parse-color \"#00000000\" 1.1) => ERROR"
+    "1.01: (parse-color \"#00000000\" 1.1) [invalid alpha] => ERROR"
     (collect-values parse-color "#00000000" 1.1))
   (test-error
-    "1.02: (parse-color \"#garbage\" 1.1) => ERROR"
+    "1.02: (parse-color \"#garbage\" 1.1) [nonsense color spec] => ERROR"
     (collect-values parse-color "#garbage" 1.1))
   (test-error
-    "1.03: (parse-color \"garbage\" #f) => ERROR"
+    "1.03: (parse-color \"garbage\" #f) [nonsense color spec] => ERROR"
     (collect-values parse-color "garbage" #f))
   (test-error
-    "1.04: (parse-color '(0 0 256) #f) => ERROR"
+    "1.04: (parse-color '(0 0 256) #f) [value out of range] => ERROR"
     (collect-values parse-color '(0 0 256) #f))
   (test-error
-    "1.05: (parse-color '(0 -19 255) #f) => ERROR"
+    "1.05: (parse-color '(0 -19 255) #f) [value out of range] => ERROR"
     (collect-values parse-color '(0 -19 255) #f))
+  (test-error
+    "1.06: (parse-color \"0,0,256\" #f) [value out of range] => ERROR"
+    (collect-values parse-color "0,0,256" #f))
+  (test-error
+    "1.07: (parse-color \"0,-19,255\" #f) [value out of range] => ERROR"
+    (collect-values parse-color "0,-19,255" #f))
+  (test-error
+    "1.08: (parse-color \"#fa28c71\" 1.0) [wrong length] => ERROR"
+    (collect-values parse-color "#fa28c71" 1.0))
+  (test-error
+    "1.09: (parse-color \"#39e4b\" 1.0) [wrong length] => ERROR"
+    (collect-values parse-color "#39e4b" 1.0))
+  (test-error
+    "1.10: (parse-color \"#aa\" 1.0) [wrong length] => ERROR"
+    (collect-values parse-color "#aa" 1.0))
 )
 
 (test-group "[2] parse-color: correct results"
   (with-comparator list=
-    (test
-      "2.01: (parse-color \"#000000\" #f) => '(0 0 0 1.0)"
-      '(0 0 0 1.0)
-      (collect-values parse-color "#000000" #f))
-    (test "2.02: (parse-color \"#000000ff\" #f) => '(0 0 0 1.0)"
-      '(0 0 0 1.0)
-      (collect-values parse-color "#000000ff" #f))
-    (test
-      "2.03: (parse-color \"#000000\" 1.0) => '(0 0 0 1.0)"
-      '(0 0 0 1.0)
-      (collect-values parse-color "#000000" 1.0))
-    (test
-      "2.04: (parse-color \"#000000ff\" 1.0) => '(0 0 0 1.0)"
-      '(0 0 0 1.0)
-      (collect-values parse-color "#000000ff" 1.0))
-    (test
-      "2.05: (parse-color \"#00000000\" 1.0) => '(0 0 0 1.0)"
-      '(0 0 0 1.0)
-      (collect-values parse-color "#00000000" 1.0))
-
+    (test-group "[2.01] hex strings" 
+      (test
+        "2.01.01: (parse-color \"#000000\" #f) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "#000000" #f))
+      (test
+        "2.01.02: (parse-color \"#000000ff\" #f) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "#000000ff" #f))
+      (test
+        "2.01.03: (parse-color \"#000000\" 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "#000000" 1.0))
+      (test
+        "2.01.04: (parse-color \"#000000ff\" 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "#000000ff" 1.0))
+      (test
+        "2.01.05: (parse-color \"#00000000\" 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "#00000000" 1.0))
+      (test
+        "2.01.06: (parse-color \"#000000\" 0) => '(0 0 0 0.0)"
+        '(0 0 0 0.0)
+        (collect-values parse-color "#000000" 0))
+      (test
+        "2.01.07: (parse-color \"#000000ff\" 0) => '(0 0 0 0.0)"
+        '(0 0 0 0.0)
+        (collect-values parse-color "#000000ff" 0))
+      (test
+        "2.01.08: (parse-color \"#000\" #f) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "#000" #f))
+      (test
+        "2.01.09: (parse-color \"#fff\" #f) => '(255 255 255 1.0)"
+        '(255 255 255 1.0)
+        (collect-values parse-color "#fff" #f))
+      (test
+        "2.01.10: (parse-color \"#a7d733\" #f) => '(167 215 51 1.0)"
+        '(167 215 51 1.0)
+        (collect-values parse-color "#a7d733" #f))
+      (with-comparator list-approx=
+        (test
+          "2.01.11: (parse-color \"#a7d73380\" #f) => '(167 215 51 0.5)"
+          '(167 215 51 0.5)
+          (collect-values parse-color "#a7d73380" #f))
+        (test
+          "2.01.12: (parse-color \"#a7d7334b\" #f) => '(167 215 51 0.294)"
+          '(167 215 51 0.294)
+          (collect-values parse-color "#a7d7334b" #f)))
+      (test
+        "2.01.13: (parse-color \"#6ac\" #f) => '(102 170 204 1.0)"
+        '(102 170 204 1.0)
+        (collect-values parse-color "#6ac" #f))
+      (test
+        "2.01.14: (parse-color \"#823f\" #f) => '(136 34 51 1.0)"
+        '(136 34 51 1.0)
+        (collect-values parse-color "#823f" #f))
+      (test
+        "2.01.15: (parse-color \"#823f\" 0.4) => '(136 34 51 0.4)"
+        '(136 34 51 0.4)
+        (collect-values parse-color "#823f" 0.4))
+    )
+    (test-group "[2.02] value lists" 
+      (test
+        "2.02.01: (parse-color '(0 0 0) #f) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color '(0 0 0) #f))
+      (test
+        "2.02.02: (parse-color '(0 0 0 1) #f) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color '(0 0 0 1) #f))
+      (test
+        "2.02.03: (parse-color '(0 0 0) 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color '(0 0 0) 1.0))
+      (test
+        "2.02.04: (parse-color '(0 0 0 1) 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color '(0 0 0 1) 1.0))
+      (test
+        "2.02.05: (parse-color '(0 0 0 0) 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color '(0 0 0 0) 1.0))
+      (test
+        "2.02.06: (parse-color '(0 0 0) 0) => '(0 0 0 0.0)"
+        '(0 0 0 0.0)
+        (collect-values parse-color '(0 0 0) 0))
+      (test
+        "2.02.07: (parse-color '(0 0 0 1) 0) => '(0 0 0 0.0)"
+        '(0 0 0 0.0)
+        (collect-values parse-color '(0 0 0 1) 0))
+      (test
+        "2.02.10: (parse-color '(167 215 51) #f) => '(167 215 51 1.0)"
+        '(167 215 51 1.0)
+        (collect-values parse-color '(167 215 51) #f))
+      (with-comparator list-approx=
+        (test
+          "2.02.11: (parse-color '(167 215 51 0.5) #f) => '(167 215 51 0.5)"
+          '(167 215 51 0.5)
+          (collect-values parse-color '(167 215 51 0.5) #f))
+        (test
+          "2.02.12: (parse-color '(167 215 51 0.294) #f) => '(167 215 51 0.294)"
+          '(167 215 51 0.294)
+          (collect-values parse-color '(167 215 51 0.294) #f)))
+    )
+    (test-group "[2.03] value list strings" 
+      (test
+        "2.03.01: (parse-color \"0,0,0\" #f) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "0,0,0" #f))
+      (test
+        "2.03.02: (parse-color \"0,0,0,1\" #f) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "0,0,0,1" #f))
+      (test
+        "2.03.03: (parse-color \"0,0,0\" 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "0,0,0" 1.0))
+      (test
+        "2.03.04: (parse-color \"0,0,0,1\" 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "0,0,0,1" 1.0))
+      (test
+        "2.03.05: (parse-color \"0,0,0,0\" 1.0) => '(0 0 0 1.0)"
+        '(0 0 0 1.0)
+        (collect-values parse-color "0,0,0,0" 1.0))
+      (test
+        "2.03.06: (parse-color \"0,0,0\" 0) => '(0 0 0 0.0)"
+        '(0 0 0 0.0)
+        (collect-values parse-color "0,0,0" 0))
+      (test
+        "2.03.07: (parse-color \"0,0,0,1\" 0) => '(0 0 0 0.0)"
+        '(0 0 0 0.0)
+        (collect-values parse-color "0,0,0,1" 0))
+      (test
+        "2.03.10: (parse-color \"167,215,51\" #f) => '(167 215 51 1.0)"
+        '(167 215 51 1.0)
+        (collect-values parse-color "167,215,51" #f))
+      (with-comparator list-approx=
+        (test
+          "2.03.11: (parse-color \"167,215,51,0.5\" #f) => '(167 215 51 0.5)"
+          '(167 215 51 0.5)
+          (collect-values parse-color "167,215,51,0.5" #f))
+        (test
+          "2.03.12: (parse-color \"167,215,51,0.294\" #f) => '(167 215 51 0.294)"
+          '(167 215 51 0.294)
+          (collect-values parse-color "167,215,51,0.294" #f)))
+    )
 ))
 
 (test-group "[3] RGB blend ops produce legal results w/ legal input"
@@ -1203,7 +1350,7 @@
         (grain-merge 80 59)))
 ))
 
-(test-group "[4] RGB blend ops produce legal results w/ legal input"
+(test-group "[4] HSV blend ops produce legal results w/ legal input"
   (with-comparator legal-hsv
     (test-group "[4.01] color"
       (test
