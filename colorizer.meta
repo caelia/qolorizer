@@ -1,0 +1,6 @@
+((license "BSD")
+ (category graphics)
+ (depends imlib2)
+ (test-depends test)   
+ (author "Matt Gushee")
+ (synopsis "A small library for colorizing monochrome images."))
