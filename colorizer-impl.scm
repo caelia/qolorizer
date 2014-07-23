@@ -80,16 +80,28 @@
       (values h s v))))
 
 (define (parse-color spec alpha)
-  (let ((s>n (lambda (s) (string->number (string-append "#x" s))))
-        (c>s (lambda (c) (list->string (list c c))))
-        (badspec (lambda () (error (sprintf "Invalid color spec: '~A'" spec)))))
+  (let ((s>n
+          (lambda (s) (string->number (string-append "#x" s))))
+        (c>s
+          (lambda (c) (list->string (list c c))))
+        (badspec
+          (lambda () (error (sprintf "Invalid color spec: '~A'" spec))))
+        (verify
+           (lambda (x n)
+             (if (and (number? x) (>= x 0) (<= x n))
+               x
+               (error (sprintf "Invalid color value: '~A'" x))))))
     (cond
       ((list? spec)
-        (let ((a (or alpha
-                     (and (= (length spec) 4)
-                          (cadddr spec))
-                     1.0)))
-          (values (car spec) (cadr spec) (caddr spec) a)))
+        (let ((r (verify (car spec) 255))
+              (g (verify (cadr spec) 255))
+              (b (verify (caddr spec) 255))
+              (a (verify
+                   (or alpha
+                     (and (= (length spec) 4) (cadddr spec))
+                     1.0)
+                   1)))
+          (values r g b a)))
       ((and (string? spec) (eqv? (string-ref spec 0) #\#))
         (let ((len (string-length spec)))
           (let-values (((r* g* b*)
@@ -109,7 +121,7 @@
                                    (and (= len 9) (substring spec 7 9))))))
             (values (s>n r*) (s>n b*) (s>n g*)
                     (or (and a* (/ (s>n a*) 255))
-                        alpha
+                        (and alpha (verify alpha 1))
                         1.0)))))
       ((string? spec)
        (let* ((parts (map string->number (string-split spec ",")))
