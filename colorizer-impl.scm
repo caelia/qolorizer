@@ -262,56 +262,27 @@
     (check255 i)
     (max (min (- (+ i m) 128) 255) 0)))
 
-(define (color-op hi si vi hm sm vm)
-  (check-hsv/2 hi si vi hm sm vm)
-  (values hm sm vi))
-
-(define (hue-op hi si vi hm sm vm)
-  (check-hsv/2 hi si vi hm sm vm)
-  (if (= sm 0)
-    (values hi si vi)
-    (values hm si vi)))
+(define (color-op hm sm vm)
+  (check-hsv hm sm vm)
+  (lambda (hi si vi) (check-hsv hi si vi) (values hm sm vi)))
   
-(define (saturation-op hi si vi hm sm vm)
-  (check-hsv/2 hi si vi hm sm vm)
-  (values hi sm vi))
+(define (hue-op hm sm vm)
+  (check-hsv hm sm vm)
+  (let ((hop
+         (lambda (hi si vi)
+           (if (= sm 0)
+             (values hi si vi)
+             (values hm si vi)))))
+    (lambda (hi si vi) (check-hsv hi si vi) (hop hi si vi))))
+  
+(define (saturation-op hm sm vm)
+  (check-hsv hm sm vm)
+  (lambda (hi si vi) (check-hsv hi si vi) (values hi sm vi)))
 
-(define (value-op hi si vi hm sm vm)
-  (check-hsv/2 hi si vi hm sm vm)
-  (values hi si vm))
+(define (value-op hm sm vm)
+  (check-hsv hm sm vm)
+  (lambda (hi si vi) (check-hsv hi si vi) (values hi si vm)))
 
-(define (blend-op/rgb rm gm bm mode)
-  (let* ((mkop
-         (alist-ref
-            mode
-            `((normal . ,normal-op) (dissolve . ,dissolve-op)
-              (multiply . ,multiply-op) (screen . ,screen-op)
-              (overlay . ,overlay-op) (hard-light . ,hard-light-op)
-              (soft-light . ,soft-light-op) (dodge . ,dodge-op)
-              (burn . ,burn-op) (divide . ,divide-op)
-              (difference . ,difference-op) (addition . ,addition-op)
-              (subtract . ,subtract-op) (darken-only . ,darken-only-op)
-              (lighten-only . ,lighten-only-op) (grain-extract . ,grain-extract-op)
-              (grain-merge . ,grain-merge-op))))
-         (rop (mkop rm))
-         (gop (mkop gm))
-         (bop (mkop bm)))
-    (lambda (ri gi bi)
-      (values (x>int (rop ri)) (x>int (gop gi)) (x>int (bop bi))))))
-
-(define (blend-op/hsv rm gm bm mode)
-  (let-values (((hm sm vm) (rgb>hsv rm gm bm)))
-    (let* ((mkop (alist-ref
-           mode
-           `((color . ,color-op)
-             (hue . ,hue-op)
-             (saturation . ,saturation-op)
-             (value . ,value-op))))
-           (op (mkop hm sm vm)))
-      (lambda (ri gi bi)
-        (let-values (((hi si vi) (rgb>hsv ri gi bi)))
-          (let-values (((h s v) (op hi si vi hm sm vm)))
-            (hsv>rgb h s v)))))))
 
 (define (source-over ri gi bi ai rm gm bm am)
   (let* ((a (- 1 (* (- 1 am) (- 1 ai))))
@@ -329,40 +300,61 @@
       (let-values (((r g b a) (op ri gi bi ai rm gm bm am)))
         (color/rgba (x>int r) (x>int g) (x>int b) (x>int (* a 255)))))))
 
-(define (colorize src-img color-spec #!key (blend-mode 'normal) (alpha #f))
+(define (mk-blend-op color-spec #!key (blend-mode 'normal) (alpha #f))
   (let-values (((rm gm bm am) (parse-color color-spec alpha)))
-    (let* ((width (image-width src-img))
-           (height (image-height src-img))
-           (dest (image-create width height))
-           (blend-class
-             (cond
-               ((memv
-                 blend-mode
-                 '(normal dissolve multiply screen overlay hard-light
-                   soft-light dodge burn divide difference addition
-                   subtract darken-only lighten-only grain-extract grain-merge))
-                 'rgb)
-               ((memv
-                 blend-mode
-                 '(color hue saturation value))
-                 'hsv)
-               (else
-                 (error (sprintf "Unknown blend mode: '~A'" blend-mode)))))
-           (blend 
-             (case blend-class
-               ((rgb) (blend-op/rgb rm gm bm blend-mode))
-               ((hsv) (blend-op/hsv rm gm bm blend-mode))))
+    (let* ((mk-rgb-op
+            (alist-ref
+              blend-mode
+              `((normal . ,normal-op) (dissolve . ,dissolve-op)
+                (multiply . ,multiply-op) (screen . ,screen-op)
+                (overlay . ,overlay-op) (hard-light . ,hard-light-op)
+                (soft-light . ,soft-light-op) (dodge . ,dodge-op)
+                (burn . ,burn-op) (divide . ,divide-op)
+                (difference . ,difference-op) (addition . ,addition-op)
+                (subtract . ,subtract-op) (darken-only . ,darken-only-op)
+                (lighten-only . ,lighten-only-op) (grain-extract . ,grain-extract-op)
+                (grain-merge . ,grain-merge-op))))
+           (mk-hsv-op
+             (and (not mk-rgb-op)
+                  (or (alist-ref
+                        blend-mode
+                        `((color . ,color-op)
+                          (hue . ,hue-op)
+                          (saturation . ,saturation-op)
+                          (value . ,value-op)))
+                      (error (sprintf "Invalid blend mode: '~A'" blend-mode)))))
            (composite
-             (composite-op am)))
-      (let hloop ((x 0))
-        (when (< x width)
-          (let vloop ((y 0))
-            (when (< y height)
-              (let-values (((ri gi bi ai) (image-pixel/rgba src-img x y)))
-                (let-values (((rb gb bb) (blend ri gi bi)))
-                  (let ((final-color (composite ri gi bi (/ ai 255) rb rb bb)))
-                    (image-draw-pixel dest final-color x y))))
-              (vloop (+ y 1))))
-          (hloop (+ x 1))))
-      dest)))
+             (composite-op am))
+           (blend
+             (if mk-rgb-op
+               (let ((rop (mk-rgb-op rm))
+                     (gop (mk-rgb-op gm))
+                     (bop (mk-rgb-op bm)))
+                 (lambda (ri gi bi) (values (rop ri) (gop gi) (bop bi)))
+               (mk-hsv-op
+                 (let-values (((hm sm vm) (rgb>hsv rm gm bm)))
+                   (let ((base-op (mk-hsv-op hm sm vm)))
+                     (lambda (ri gi bi)
+                       (let-values (((hi si vi) (rgb>hsv ri gi bi)))
+                         (let-values (((h s v) (base-op hi si vi)))
+                           (hsv>rgb h s v)))))))))))
+      (lambda (ri gi bi ai)
+        (let-values (((rb gb bb) (blend ri gi bi)))
+          (composite ri gi bi ai rb gb bb am))))))
+                    
+
+(define (colorize src-img pixel-op)
+  (let* ((width (image-width src-img))
+         (height (image-height src-img))
+         (dest (image-create width height)))
+    (let hloop ((x 0))
+      (when (< x width)
+        (let vloop ((y 0))
+          (when (< y height)
+            (let-values (((ri gi bi ai) (image-pixel/rgba src-img x y)))
+              (let ((final-color (pixel-op ri gi bi ai)))
+                (image-draw-pixel dest final-color x y)))
+          (vloop (+ y 1))))
+        (hloop (+ x 1))))
+    dest))
 
