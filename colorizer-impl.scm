@@ -285,7 +285,8 @@
 
 
 (define (source-over ri gi bi ai rm gm bm am)
-  (let* ((a (- 1 (* (- 1 am) (- 1 ai))))
+  ; (let* ((a (- 1 (* (- 1 am) (- 1 ai)))) ; don't know where I got this
+  (let* ((a (- (+ ai am) (/ ai am)))
          (f
            (lambda (ci cm)
              (/ (+ (* cm am) (* ci ai (- 1 am))) a))))
