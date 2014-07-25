@@ -2,6 +2,10 @@
 (import extras)
 (use imlib2)
 
+(define (check1 x)
+  (or (and (>= x 0) (<= x 1))
+      (error (sprintf "Invalid input: ~A\n" x))))
+
 (define (check255 x)
   (or (and (>= x 0) (<= x 255))
       (error (sprintf "Invalid input: ~A\n" x))))
@@ -48,38 +52,34 @@
 ;;   http://stackoverflow.com/questions/3018313/\
 ;;     algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
 (define (hsv>rgb h s v)
-  (let ((@> (lambda (x) (x>int (* x 255)))))
-    (if (= s 0)
-      (values (@> v) (@> v) (@> v))
-      (let* ((c (* v s))
-             (x (* c (- 1 (abs (- (modulo (/ h 60) 2) 1)))))
-             (m (- v c)))
-        (let-values (((r* g* b*)
-                      (cond
-                        ((>= h 360) (error (sprintf "Hue > 360? [~A]" h)))
-                        ((< h 0) (error (sprintf "Hue < 0? [~A]" h)))
-                        ((< h 60) (values c x 0))
-                        ((< h 120) (values x c 0))
-                        ((< h 180) (values 0 c x))
-                        ((< h 240) (values 0 x c))
-                        ((< h 300) (values x 0 c))
-                        (else (values c 0 x)))))
-          (values (@> (+ r* m)) (@> (+ g* m)) (@> (+ b* m))))))))
+  (if (= s 0)
+    (values v v v)
+    (let* ((c (* v s))
+           (x (* c (- 1 (abs (- (modulo (/ h 60) 2) 1)))))
+           (m (- v c)))
+      (let-values (((r* g* b*)
+                    (cond
+                      ((>= h 360) (error (sprintf "Hue > 360? [~A]" h)))
+                      ((< h 0) (error (sprintf "Hue < 0? [~A]" h)))
+                      ((< h 60) (values c x 0))
+                      ((< h 120) (values x c 0))
+                      ((< h 180) (values 0 c x))
+                      ((< h 240) (values 0 x c))
+                      ((< h 300) (values x 0 c))
+                      (else (values c 0 x)))))
+        (values (+ r* m) (+ g* m) (+ b* m))))))
 
 (define (rgb>hsv r g b)
-  (let* ((r* (/ r 255))
-         (g* (/ g 255))
-         (b* (/ b 255))
-         (cmax (max r* g* b*))
-         (cmin (min r* g* b*))
+  (let* ((cmax (max r g b))
+         (cmin (min r g b))
          (delta (- cmax cmin)))
     (let ((h
            (*
              60
              (cond
-               ((= cmax r*) (modulo (/ (- g* b*) delta) 6))
-               ((= cmax g*) (+ (/ (- b* r*) delta) 2))
-               (else (+ (/ (- r* g*) delta) 4)))))
+               ((= cmax r) (modulo (/ (- g b) delta) 6))
+               ((= cmax g) (+ (/ (- b r) delta) 2))
+               (else (+ (/ (- r g) delta) 4)))))
           (s
             (if (= delta 0)
               0
@@ -141,101 +141,91 @@
         (badspec)))))
 
 (define (normal-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) m))
+  (check1 m) 
+  (lambda (i) (check1 i) m))
 
 (define (dissolve-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) (if (= (random 2) 0) i m)))
+  (check1 m) 
+  (lambda (i) (check1 i) (if (= (random 2) 0) i m)))
 
 (define (multiply-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) (x>int (/ (* i m) 255))))
+  (check1 m) 
+  (lambda (i) (check1 i) (* i m)))
 
 (define (screen-op m)
-  (check255 m) 
-  (let ((a (- 255 m)))
+  (check1 m) 
+  (let ((a (- 1 m)))
     (lambda (i)
-      (check255 i)
-      (x>int (- 255 (/ (* a (- 255 i)) 255))))))
+      (check1 i)
+      (- 1 (* a (- 1 i))))))
 
 (define (overlay-op m)
-  (check255 m) 
+  (check1 m) 
   (let ((a (* 2 m)))
     (lambda (i)
-      (check255 i)
-      (x>int (* (/ i 255) (+ i (* (/ a 255) (- 255 i))))))))
+      (check1 i)
+      (* i (+ i (* a (- 1 i)))))))
 
 (define (hard-light-op m)
-  (check255 m) 
-  (let ((a (* 2 (- m 128))))
+  (check1 m) 
+  (let ((a (* 2 (- m 0.5))))
     (lambda (i)
-    (check255 i)
-    (x>int
-      (if (> m 128)
-        (- 255 (/ (* (- 255 a) (- 255 i)) 256))
-        (/ (* 2 m i) 256))))))
+      (check1 i)
+      (if (> m 0.5)
+        (- 1 (* (- 1 a) (- 1 i)))
+        (* 2 m i)))))
 
 ;; This formula seems completely broken
 ; (define (soft-light i m)
-  ; (check255/2 i m)
+  ; (check1/2 i m)
   ; (x>int (* (/ (+ (* (- 255 i) m) (screen i m)) 255) i)))
 
 ;; Here is the W3C formula
 (define (soft-light-op m)
-  (check255 m) 
-  (let* ((m* (/ m 255))
-         (a (- (* 2 m*) 1))
-         (b (- 1 (* 2 m*))))
+  (check1 m) 
+  (let ((a (- (* 2 m) 1))
+        (b (- 1 (* 2 m))))
     (lambda (i)
-      (check255 i)
-      (let ((i* (/ i 255)))
-        (let ((res
-                (cond
-                  ((and (> m* 0.5) (> i* 0.25))
-                   (+ i* (* a (- (sqrt i*) i*))))
-                  ((> m* 0.5)
-                   (+ i* (* a (- (* (+ (* (- (* 16 i*) 12) i*) 4) i*) i*))))
-                  (else
-                    (- i* (* b i* (- 1 i*)))))))
-          (x>int (* 255 res)))))))
+      (check1 i)
+      (cond
+        ((and (> m 0.5) (> i 0.25))
+          (+ i (* a (- (sqrt i) i))))
+        ((> m 0.5)
+          (+ i (* a (- (* (+ (* (- (* 16 i) 12) i) 4) i) i))))
+        (else
+          (- i (* b i (- 1 i))))))))
 
 ;; ???
 (define (dodge-op m)
-  (check255 m) 
-  (let ((a (+ (- 255 m) 1)))
-    (lambda (i)
-      (check255 i)
-      (clamp255 (x>int (/ (* 256 i) a))))))
+  (check1 m) 
+  (let ((a (- 1 m)))
+    (lambda (i) (check1 i) (/ i a))))
 
 ;; ???
 (define (burn-op m)
-  (check255 m) 
+  (check1 m) 
   (let ((a (+ m 1)))
     (lambda (i)
-      (check255 i)
-      (clamp255 (x>int (- 255 (/ (* 256 (- 255 i)) a)))))))
+      (check1 i)
+      (- 1 (- 1 i) a))))
 
 ;; 1. Based on test results, the formula in the GIMP manual matches
 ;;    program behavior, except values are constrained to 0 <= x <= 255.
 (define (divide-op m)
-  (check255 m) 
-  (let ((a (+ m 1)))
-    (lambda (i)
-      (check255 i)
-      (clamp255 (x>int (/ (* 256 i) a))))))
+  (check1 m) 
+  (lambda (i) (check1 i) (/ i m)))
 
 (define (difference-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) (abs (- i m))))
+  (check1 m) 
+  (lambda (i) (check1 i) (abs (- i m))))
 
 (define (addition-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) (min (+ i m) 255)))
+  (check1 m) 
+  (lambda (i) (check1 i) (min (+ i m) 1)))
 
 (define (subtract-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) (max (- i m) 0)))
+  (check1 m) 
+  (lambda (i) (check1 i) (max (- i m) 0)))
 
 ; (define darken-only min)
 
@@ -243,24 +233,24 @@
 
 ;; Temporary defs for debugging
 (define (darken-only-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) (min i m)))
+  (check1 m) 
+  (lambda (i) (check1 i) (min i m)))
 
 (define (lighten-only-op m)
-  (check255 m) 
-  (lambda (i) (check255 i) (max i m)))
+  (check1 m) 
+  (lambda (i) (check1 i) (max i m)))
 
 (define (grain-extract-op m)
-  (check255 m) 
+  (check1 m) 
   (lambda (i)
-    (check255 i)
-    (max (min (+ (- i m) 128) 255) 0)))
+    (check1 i)
+    (max (min (+ (- i m) 0.5) 1) 0)))
 
 (define (grain-merge-op m)
-  (check255 m) 
+  (check1 m) 
   (lambda (i)
-    (check255 i)
-    (max (min (- (+ i m) 128) 255) 0)))
+    (check1 i)
+    (max (min (- (+ i m) 0.5) 1) 0)))
 
 (define (color-op hm sm vm)
   (check-hsv hm sm vm)
