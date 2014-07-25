@@ -276,7 +276,8 @@
 
 (define (source-over ri gi bi ai rm gm bm am)
   ; (let* ((a (- 1 (* (- 1 am) (- 1 ai)))) ; don't know where I got this
-  (let* ((a (- (+ ai am) (/ ai am)))
+  ; (let* ((a (- (+ ai am) (/ ai am)))     ; I think this is an error
+  (let* ((a (- (+ ai am) (* ai am)))       ; based on W3C Compositing
          (f
            (lambda (ci cm)
              (/ (+ (* cm am) (* ci ai (- 1 am))) a))))
