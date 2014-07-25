@@ -42,6 +42,9 @@
 (define (x>int x)
   (inexact->exact (round x)))
 
+(define (clamp1 x)
+  (min (max x 0) 1))
+
 (define (clamp255 x)
   (min (max x 0) 255))
 
@@ -89,7 +92,7 @@
 
 (define (parse-color spec alpha)
   (let ((s>n
-          (lambda (s) (string->number (string-append "#x" s))))
+          (lambda (s) (/ (string->number (string-append "#x" s)) 255)))
         (c>s
           (lambda (c) (list->string (list c c))))
         (badspec
@@ -109,7 +112,7 @@
                      (and (= (length spec) 4) (cadddr spec))
                      1.0)
                    1)))
-          (values r g b a)))
+          (values (/ r 255) (/ g 255) (/ b 255) a)))
       ((and (string? spec) (eqv? (string-ref spec 0) #\#))
         (let ((len (string-length spec)))
           (let-values (((r* g* b*)
@@ -128,7 +131,7 @@
                                (or (and (= len 5) (c>s (string-ref spec 4)))
                                    (and (= len 9) (substring spec 7 9))))))
             (values (s>n r*) (s>n g*) (s>n b*)
-                    (or (and a* (/ (s>n a*) 255))
+                    (or (and a* (s>n a*))
                         (and alpha (verify alpha 1))
                         1.0)))))
       ((string? spec)
@@ -343,9 +346,10 @@
       (when (< x width)
         (let vloop ((y 0))
           (when (< y height)
-            (let-values (((ri gi bi ai) (image-pixel/rgba src-img x y)))
-              (let ((final-color (pixel-op ri gi bi ai)))
-                (image-draw-pixel dest final-color x y)))
+            (let-values (((ri* gi* bi* ai*) (image-pixel/rgba src-img x y)))
+              (let-values (((ri gi bi ai) (values (/ ri* 255) (/ gi* 255) (/ bi* 255) (/ ai* 255))))
+                (let ((final-color (pixel-op ri gi bi ai)))
+                  (image-draw-pixel dest final-color x y))))
           (vloop (+ y 1))))
         (hloop (+ x 1))))
     dest))
