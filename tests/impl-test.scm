@@ -26,6 +26,9 @@
 (define (legal255 _ x)
   (and (>= x 0) (<= x 255)))
 
+(define (legal1 _ x)
+  (and (>= x 0) (<= x 1)))
+
 (define (legal-hsv _ hsv)
   (let ((h (car hsv))
         (s (cadr hsv))
@@ -54,6 +57,8 @@
        proc
        ...
        (current-test-epsilon default-epsilon)))))
+
+(current-test-epsilon 0.001)
 
 (test-group "[1] parse-color: bad input causes errors"
   (test-error
@@ -124,33 +129,33 @@
         '(0 0 0 1.0)
         (collect-values parse-color "#000" #f))
       (test
-        "2.01.09: (parse-color \"#fff\" #f) => '(255 255 255 1.0)"
-        '(255 255 255 1.0)
+        "2.01.09: (parse-color \"#fff\" #f) => '(1 1 1 1.0)"
+        '(1 1 1 1.0)
         (collect-values parse-color "#fff" #f))
       (test
-        "2.01.10: (parse-color \"#a7d733\" #f) => '(167 215 51 1.0)"
-        '(167 215 51 1.0)
+        "2.01.10: (parse-color \"#a7d733\" #f) => '(0.655 0.843 0.200 1.0)"
+        '(0.655 0.843 0.200 1.0)
         (collect-values parse-color "#a7d733" #f))
       (with-comparator list-approx=
         (test
-          "2.01.11: (parse-color \"#a7d73380\" #f) => '(167 215 51 0.5)"
-          '(167 215 51 0.5)
+          "2.01.11: (parse-color \"#a7d73380\" #f) => '(0.655 0.843 0.200 0.5)"
+          '(0.655 0.843 0.200 0.5)
           (collect-values parse-color "#a7d73380" #f))
         (test
-          "2.01.12: (parse-color \"#a7d7334b\" #f) => '(167 215 51 0.294)"
-          '(167 215 51 0.294)
+          "2.01.12: (parse-color \"#a7d7334b\" #f) => '(0.655 0.843 0.200 0.294)"
+          '(0.655 0.843 0.200 0.294)
           (collect-values parse-color "#a7d7334b" #f)))
       (test
-        "2.01.13: (parse-color \"#6ac\" #f) => '(102 170 204 1.0)"
-        '(102 170 204 1.0)
+        "2.01.13: (parse-color \"#6ac\" #f) => '(0.400 0.667 0.800 1.0)"
+        '(0.400 0.667 0.800 1.0)
         (collect-values parse-color "#6ac" #f))
       (test
-        "2.01.14: (parse-color \"#823f\" #f) => '(136 34 51 1.0)"
-        '(136 34 51 1.0)
+        "2.01.14: (parse-color \"#823f\" #f) => '(0.533 0.133 0.200 1.0)"
+        '(0.533 0.133 0.200 1.0)
         (collect-values parse-color "#823f" #f))
       (test
-        "2.01.15: (parse-color \"#823f\" 0.4) => '(136 34 51 0.4)"
-        '(136 34 51 0.4)
+        "2.01.15: (parse-color \"#823f\" 0.4) => '(0.533 0.133 0.200 0.4)"
+        '(0.533 0.133 0.200 0.4)
         (collect-values parse-color "#823f" 0.4))
     )
     (test-group "[2.02] value lists" 
@@ -183,17 +188,17 @@
         '(0 0 0 0.0)
         (collect-values parse-color '(0 0 0 1) 0))
       (test
-        "2.02.10: (parse-color '(167 215 51) #f) => '(167 215 51 1.0)"
-        '(167 215 51 1.0)
+        "2.02.10: (parse-color '(167 215 51) #f) => '(0.655 0.843 0.200 1.0)"
+        '(0.655 0.843 0.200 1.0)
         (collect-values parse-color '(167 215 51) #f))
       (with-comparator list-approx=
         (test
-          "2.02.11: (parse-color '(167 215 51 0.5) #f) => '(167 215 51 0.5)"
-          '(167 215 51 0.5)
+          "2.02.11: (parse-color '(167 215 51 0.5) #f) => '(0.655 0.843 0.200 0.5)"
+          '(0.655 0.843 0.200 0.5)
           (collect-values parse-color '(167 215 51 0.5) #f))
         (test
-          "2.02.12: (parse-color '(167 215 51 0.294) #f) => '(167 215 51 0.294)"
-          '(167 215 51 0.294)
+          "2.02.12: (parse-color '(167 215 51 0.294) #f) => '(0.655 0.843 0.200 0.294)"
+          '(0.655 0.843 0.200 0.294)
           (collect-values parse-color '(167 215 51 0.294) #f)))
     )
     (test-group "[2.03] value list strings" 
@@ -226,1408 +231,1408 @@
         '(0 0 0 0.0)
         (collect-values parse-color "0,0,0,1" 0))
       (test
-        "2.03.10: (parse-color \"167,215,51\" #f) => '(167 215 51 1.0)"
-        '(167 215 51 1.0)
+        "2.03.10: (parse-color \"167,215,51\" #f) => '(0.655 0.843 0.200 1.0)"
+        '(0.655 0.843 0.200 1.0)
         (collect-values parse-color "167,215,51" #f))
       (with-comparator list-approx=
         (test
-          "2.03.11: (parse-color \"167,215,51,0.5\" #f) => '(167 215 51 0.5)"
-          '(167 215 51 0.5)
+          "2.03.11: (parse-color \"167,215,51,0.5\" #f) => '(0.655 0.843 0.200 0.5)"
+          '(0.655 0.843 0.200 0.5)
           (collect-values parse-color "167,215,51,0.5" #f))
         (test
-          "2.03.12: (parse-color \"167,215,51,0.294\" #f) => '(167 215 51 0.294)"
-          '(167 215 51 0.294)
+          "2.03.12: (parse-color \"167,215,51,0.294\" #f) => '(0.655 0.843 0.200 0.294)"
+          '(0.655 0.843 0.200 0.294)
           (collect-values parse-color "167,215,51,0.294" #f)))
     )
 ))
 
 (test-group "[3] RGB blend ops produce legal results w/ legal input"
-  (with-comparator legal255
+  (with-comparator legal1
     (test-group "[3.01] normal"
       (test
-        "3.01.01: (normal 0 0)"
+        "3.01.01: ((normal-op 0) 0)"
         #:LEGAL
-        (normal 0 0))
+        ((normal-op 0) 0))
       (test
-        "3.01.02: (normal 17 17)"
+        "3.01.02: ((normal-op 0.067) 0.067)"
         #:LEGAL
-        (normal 17 17))
+        ((normal-op 0.067) 0.067))
       (test
-        "3.01.03: (normal 124 124)"
+        "3.01.03: ((normal-op 0.486) 0.486)"
         #:LEGAL
-        (normal 124 124))
+        ((normal-op 0.486) 0.486))
       (test
-        "3.01.04: (normal 255 255)"
+        "3.01.04: ((normal-op 1) 1)"
         #:LEGAL
-        (normal 255 255))
+        ((normal-op 1) 1))
       (test
-        "3.01.05: (normal 0 255)"
+        "3.01.05: ((normal-op 1) 0)"
         #:LEGAL
-        (normal 0 255))
+        ((normal-op 1) 0))
       (test
-        "3.01.06: (normal 255 0)"
+        "3.01.06: ((normal-op 0) 1)"
         #:LEGAL
-        (normal 255 0))
+        ((normal-op 0) 1))
       (test
-        "3.01.07: (normal 1 0)"
+        "3.01.07: ((normal-op 0) 0.004)"
         #:LEGAL
-        (normal 1 0))
+        ((normal-op 0) 0.004))
       (test
-        "3.01.08: (normal 0 1)"
+        "3.01.08: ((normal-op 0.004) 0)"
         #:LEGAL
-        (normal 0 1))
+        ((normal-op 0.004) 0))
       (test
-        "3.01.09: (normal 254 255)"
+        "3.01.09: ((normal-op 1) 0.996)"
         #:LEGAL
-        (normal 254 255))
+        ((normal-op 1) 0.996))
       (test
-        "3.01.10: (normal 255 254)"
+        "3.01.10: ((normal-op 0.996) 1)"
         #:LEGAL
-        (normal 255 254))
+        ((normal-op 0.996) 1))
       (test
-        "3.01.11: (normal 29 28)"
+        "3.01.11: ((normal-op 0.110) 0.114)"
         #:LEGAL
-        (normal 29 28))
+        ((normal-op 0.110) 0.114))
       (test
-        "3.01.12: (normal 28 29)"
+        "3.01.12: ((normal-op 0.114) 0.110)"
         #:LEGAL
-        (normal 28 29))
+        ((normal-op 0.114) 0.110))
       (test
-        "3.01.13: (normal 17 204)"
+        "3.01.13: ((normal-op 0.800) 0.067)"
         #:LEGAL
-        (normal 17 204))
+        ((normal-op 0.800) 0.067))
       (test
-        "3.01.14: (normal 204 17)"
+        "3.01.14: ((normal-op 0.067) 0.800)"
         #:LEGAL
-        (normal 204 17))
+        ((normal-op 0.067) 0.800))
       (test
-        "3.01.15: (normal 59 80)"
+        "3.01.15: ((normal-op 0.314) 0.231)"
         #:LEGAL
-        (normal 59 80))
+        ((normal-op 0.314) 0.231))
       (test
-        "3.01.16: (normal 80 59)"
+        "3.01.16: ((normal-op 0.231) 0.314)"
         #:LEGAL
-        (normal 80 59)))
+        ((normal-op 0.231) 0.314)))
     (test-group "[3.02] dissolve"
       (test
-        "3.02.01: (dissolve 0 0)"
+        "3.02.01: ((dissolve-op 0) 0)"
         #:LEGAL
-        (dissolve 0 0))
+        ((dissolve-op 0) 0))
       (test
-        "3.02.02: (dissolve 17 17)"
+        "3.02.02: ((dissolve-op 0.067) 0.067)"
         #:LEGAL
-        (dissolve 17 17))
+        ((dissolve-op 0.067) 0.067))
       (test
-        "3.02.03: (dissolve 124 124)"
+        "3.02.03: ((dissolve-op 0.486) 0.486)"
         #:LEGAL
-        (dissolve 124 124))
+        ((dissolve-op 0.486) 0.486))
       (test
-        "3.02.04: (dissolve 255 255)"
+        "3.02.04: ((dissolve-op 1) 1)"
         #:LEGAL
-        (dissolve 255 255))
+        ((dissolve-op 1) 1))
       (test
-        "3.02.05: (dissolve 0 255)"
+        "3.02.05: ((dissolve-op 1) 0)"
         #:LEGAL
-        (dissolve 0 255))
+        ((dissolve-op 1) 0))
       (test
-        "3.02.06: (dissolve 255 0)"
+        "3.02.06: ((dissolve-op 0) 1)"
         #:LEGAL
-        (dissolve 255 0))
+        ((dissolve-op 0) 1))
       (test
-        "3.02.07: (dissolve 1 0)"
+        "3.02.07: ((dissolve-op 0) 0.004)"
         #:LEGAL
-        (dissolve 1 0))
+        ((dissolve-op 0) 0.004))
       (test
-        "3.02.08: (dissolve 0 1)"
+        "3.02.08: ((dissolve-op 0.004) 0)"
         #:LEGAL
-        (dissolve 0 1))
+        ((dissolve-op 0.004) 0))
       (test
-        "3.02.09: (dissolve 254 255)"
+        "3.02.09: ((dissolve-op 1) 0.996)"
         #:LEGAL
-        (dissolve 254 255))
+        ((dissolve-op 1) 0.996))
       (test
-        "3.02.10: (dissolve 255 254)"
+        "3.02.10: ((dissolve-op 0.996) 1)"
         #:LEGAL
-        (dissolve 255 254))
+        ((dissolve-op 0.996) 1))
       (test
-        "3.02.11: (dissolve 29 28)"
+        "3.02.11: ((dissolve-op 0.110) 0.114)"
         #:LEGAL
-        (dissolve 29 28))
+        ((dissolve-op 0.110) 0.114))
       (test
-        "3.02.12: (dissolve 28 29)"
+        "3.02.12: ((dissolve-op 0.114) 0.110)"
         #:LEGAL
-        (dissolve 28 29))
+        ((dissolve-op 0.114) 0.110))
       (test
-        "3.02.13: (dissolve 17 204)"
+        "3.02.13: ((dissolve-op 0.800) 0.067)"
         #:LEGAL
-        (dissolve 17 204))
+        ((dissolve-op 0.800) 0.067))
       (test
-        "3.02.14: (dissolve 204 17)"
+        "3.02.14: ((dissolve-op 0.067) 0.800)"
         #:LEGAL
-        (dissolve 204 17))
+        ((dissolve-op 0.067) 0.800))
       (test
-        "3.02.15: (dissolve 59 80)"
+        "3.02.15: ((dissolve-op 0.314) 0.231)"
         #:LEGAL
-        (dissolve 59 80))
+        ((dissolve-op 0.314) 0.231))
       (test
-        "3.02.16: (dissolve 80 59)"
+        "3.02.16: ((dissolve-op 0.231) 0.314)"
         #:LEGAL
-        (dissolve 80 59)))
+        ((dissolve-op 0.231) 0.314)))
     (test-group "[3.03] multiply"
       (test
-        "3.03.01: (multiply 0 0)"
+        "3.03.01: ((multiply-op 0) 0)"
         #:LEGAL
-        (multiply 0 0))
+        ((multiply-op 0) 0))
       (test
-        "3.03.02: (multiply 17 17)"
+        "3.03.02: ((multiply-op 0.067) 0.067)"
         #:LEGAL
-        (multiply 17 17))
+        ((multiply-op 0.067) 0.067))
       (test
-        "3.03.03: (multiply 124 124)"
+        "3.03.03: ((multiply-op 0.486) 0.486)"
         #:LEGAL
-        (multiply 124 124))
+        ((multiply-op 0.486) 0.486))
       (test
-        "3.03.04: (multiply 255 255)"
+        "3.03.04: ((multiply-op 1) 1)"
         #:LEGAL
-        (multiply 255 255))
+        ((multiply-op 1) 1))
       (test
-        "3.03.05: (multiply 0 255)"
+        "3.03.05: ((multiply-op 1) 0)"
         #:LEGAL
-        (multiply 0 255))
+        ((multiply-op 1) 0))
       (test
-        "3.03.06: (multiply 255 0)"
+        "3.03.06: ((multiply-op 0) 1)"
         #:LEGAL
-        (multiply 255 0))
+        ((multiply-op 0) 1))
       (test
-        "3.03.07: (multiply 1 0)"
+        "3.03.07: ((multiply-op 0) 0.004)"
         #:LEGAL
-        (multiply 1 0))
+        ((multiply-op 0) 0.004))
       (test
-        "3.03.08: (multiply 0 1)"
+        "3.03.08: ((multiply-op 0.004) 0)"
         #:LEGAL
-        (multiply 0 1))
+        ((multiply-op 0.004) 0))
       (test
-        "3.03.09: (multiply 254 255)"
+        "3.03.09: ((multiply-op 1) 0.996)"
         #:LEGAL
-        (multiply 254 255))
+        ((multiply-op 1) 0.996))
       (test
-        "3.03.10: (multiply 255 254)"
+        "3.03.10: ((multiply-op 0.996) 1)"
         #:LEGAL
-        (multiply 255 254))
+        ((multiply-op 0.996) 1))
       (test
-        "3.03.11: (multiply 29 28)"
+        "3.03.11: ((multiply-op 0.110) 0.114)"
         #:LEGAL
-        (multiply 29 28))
+        ((multiply-op 0.110) 0.114))
       (test
-        "3.03.12: (multiply 28 29)"
+        "3.03.12: ((multiply-op 0.114) 0.110)"
         #:LEGAL
-        (multiply 28 29))
+        ((multiply-op 0.114) 0.110))
       (test
-        "3.03.13: (multiply 17 204)"
+        "3.03.13: ((multiply-op 0.800) 0.067)"
         #:LEGAL
-        (multiply 17 204))
+        ((multiply-op 0.800) 0.067))
       (test
-        "3.03.14: (multiply 204 17)"
+        "3.03.14: ((multiply-op 0.067) 0.800)"
         #:LEGAL
-        (multiply 204 17))
+        ((multiply-op 0.067) 0.800))
       (test
-        "3.03.15: (multiply 59 80)"
+        "3.03.15: ((multiply-op 0.314) 0.231)"
         #:LEGAL
-        (multiply 59 80))
+        ((multiply-op 0.314) 0.231))
       (test
-        "3.03.16: (multiply 80 59)"
+        "3.03.16: ((multiply-op 0.231) 0.314)"
         #:LEGAL
-        (multiply 80 59)))
+        ((multiply-op 0.231) 0.314)))
     (test-group "[3.04] screen"
       (test
-        "3.04.01: (screen 0 0)"
+        "3.04.01: ((screen-op 0) 0)"
         #:LEGAL
-        (screen 0 0))
+        ((screen-op 0) 0))
       (test
-        "3.04.02: (screen 17 17)"
+        "3.04.02: ((screen-op 0.067) 0.067)"
         #:LEGAL
-        (screen 17 17))
+        ((screen-op 0.067) 0.067))
       (test
-        "3.04.03: (screen 124 124)"
+        "3.04.03: ((screen-op 0.486) 0.486)"
         #:LEGAL
-        (screen 124 124))
+        ((screen-op 0.486) 0.486))
       (test
-        "3.04.04: (screen 255 255)"
+        "3.04.04: ((screen-op 1) 1)"
         #:LEGAL
-        (screen 255 255))
+        ((screen-op 1) 1))
       (test
-        "3.04.05: (screen 0 255)"
+        "3.04.05: ((screen-op 1) 0)"
         #:LEGAL
-        (screen 0 255))
+        ((screen-op 1) 0))
       (test
-        "3.04.06: (screen 255 0)"
+        "3.04.06: ((screen-op 0) 1)"
         #:LEGAL
-        (screen 255 0))
+        ((screen-op 0) 1))
       (test
-        "3.04.07: (screen 1 0)"
+        "3.04.07: ((screen-op 0) 0.004)"
         #:LEGAL
-        (screen 1 0))
+        ((screen-op 0) 0.004))
       (test
-        "3.04.08: (screen 0 1)"
+        "3.04.08: ((screen-op 0.004) 0)"
         #:LEGAL
-        (screen 0 1))
+        ((screen-op 0.004) 0))
       (test
-        "3.04.09: (screen 254 255)"
+        "3.04.09: ((screen-op 1) 0.996)"
         #:LEGAL
-        (screen 254 255))
+        ((screen-op 1) 0.996))
       (test
-        "3.04.10: (screen 255 254)"
+        "3.04.10: ((screen-op 0.996) 1)"
         #:LEGAL
-        (screen 255 254))
+        ((screen-op 0.996) 1))
       (test
-        "3.04.11: (screen 29 28)"
+        "3.04.11: ((screen-op 0.110) 0.114)"
         #:LEGAL
-        (screen 29 28))
+        ((screen-op 0.110) 0.114))
       (test
-        "3.04.12: (screen 28 29)"
+        "3.04.12: ((screen-op 0.114) 0.110)"
         #:LEGAL
-        (screen 28 29))
+        ((screen-op 0.114) 0.110))
       (test
-        "3.04.13: (screen 17 204)"
+        "3.04.13: ((screen-op 0.800) 0.067)"
         #:LEGAL
-        (screen 17 204))
+        ((screen-op 0.800) 0.067))
       (test
-        "3.04.14: (screen 204 17)"
+        "3.04.14: ((screen-op 0.067) 0.800)"
         #:LEGAL
-        (screen 204 17))
+        ((screen-op 0.067) 0.800))
       (test
-        "3.04.15: (screen 59 80)"
+        "3.04.15: ((screen-op 0.314) 0.231)"
         #:LEGAL
-        (screen 59 80))
+        ((screen-op 0.314) 0.231))
       (test
-        "3.04.16: (screen 80 59)"
+        "3.04.16: ((screen-op 0.231) 0.314)"
         #:LEGAL
-        (screen 80 59)))
+        ((screen-op 0.231) 0.314)))
     (test-group "[3.05] overlay"
       (test
-        "3.05.01: (overlay 0 0)"
+        "3.05.01: ((overlay-op 0) 0)"
         #:LEGAL
-        (overlay 0 0))
+        ((overlay-op 0) 0))
       (test
-        "3.05.02: (overlay 17 17)"
+        "3.05.02: ((overlay-op 0.067) 0.067)"
         #:LEGAL
-        (overlay 17 17))
+        ((overlay-op 0.067) 0.067))
       (test
-        "3.05.03: (overlay 124 124)"
+        "3.05.03: ((overlay-op 0.486) 0.486)"
         #:LEGAL
-        (overlay 124 124))
+        ((overlay-op 0.486) 0.486))
       (test
-        "3.05.04: (overlay 255 255)"
+        "3.05.04: ((overlay-op 1) 1)"
         #:LEGAL
-        (overlay 255 255))
+        ((overlay-op 1) 1))
       (test
-        "3.05.05: (overlay 0 255)"
+        "3.05.05: ((overlay-op 1) 0)"
         #:LEGAL
-        (overlay 0 255))
+        ((overlay-op 1) 0))
       (test
-        "3.05.06: (overlay 255 0)"
+        "3.05.06: ((overlay-op 0) 1)"
         #:LEGAL
-        (overlay 255 0))
+        ((overlay-op 0) 1))
       (test
-        "3.05.07: (overlay 1 0)"
+        "3.05.07: ((overlay-op 0) 0.004)"
         #:LEGAL
-        (overlay 1 0))
+        ((overlay-op 0) 0.004))
       (test
-        "3.05.08: (overlay 0 1)"
+        "3.05.08: ((overlay-op 0.004) 0)"
         #:LEGAL
-        (overlay 0 1))
+        ((overlay-op 0.004) 0))
       (test
-        "3.05.09: (overlay 254 255)"
+        "3.05.09: ((overlay-op 1) 0.996)"
         #:LEGAL
-        (overlay 254 255))
+        ((overlay-op 1) 0.996))
       (test
-        "3.05.10: (overlay 255 254)"
+        "3.05.10: ((overlay-op 0.996) 1)"
         #:LEGAL
-        (overlay 255 254))
+        ((overlay-op 0.996) 1))
       (test
-        "3.05.11: (overlay 29 28)"
+        "3.05.11: ((overlay-op 0.110) 0.114)"
         #:LEGAL
-        (overlay 29 28))
+        ((overlay-op 0.110) 0.114))
       (test
-        "3.05.12: (overlay 28 29)"
+        "3.05.12: ((overlay-op 0.114) 0.110)"
         #:LEGAL
-        (overlay 28 29))
+        ((overlay-op 0.114) 0.110))
       (test
-        "3.05.13: (overlay 17 204)"
+        "3.05.13: ((overlay-op 0.800) 0.067)"
         #:LEGAL
-        (overlay 17 204))
+        ((overlay-op 0.800) 0.067))
       (test
-        "3.05.14: (overlay 204 17)"
+        "3.05.14: ((overlay-op 0.067) 0.800)"
         #:LEGAL
-        (overlay 204 17))
+        ((overlay-op 0.067) 0.800))
       (test
-        "3.05.15: (overlay 59 80)"
+        "3.05.15: ((overlay-op 0.314) 0.231)"
         #:LEGAL
-        (overlay 59 80))
+        ((overlay-op 0.314) 0.231))
       (test
-        "3.05.16: (overlay 80 59)"
+        "3.05.16: ((overlay-op 0.231) 0.314)"
         #:LEGAL
-        (overlay 80 59)))
+        ((overlay-op 0.231) 0.314)))
     (test-group "[3.06] difference"
       (test
-        "3.06.01: (difference 0 0)"
+        "3.06.01: ((difference-op 0) 0)"
         #:LEGAL
-        (difference 0 0))
+        ((difference-op 0) 0))
       (test
-        "3.06.02: (difference 17 17)"
+        "3.06.02: ((difference-op 0.067) 0.067)"
         #:LEGAL
-        (difference 17 17))
+        ((difference-op 0.067) 0.067))
       (test
-        "3.06.03: (difference 124 124)"
+        "3.06.03: ((difference-op 0.486) 0.486)"
         #:LEGAL
-        (difference 124 124))
+        ((difference-op 0.486) 0.486))
       (test
-        "3.06.04: (difference 255 255)"
+        "3.06.04: ((difference-op 1) 1)"
         #:LEGAL
-        (difference 255 255))
+        ((difference-op 1) 1))
       (test
-        "3.06.05: (difference 0 255)"
+        "3.06.05: ((difference-op 1) 0)"
         #:LEGAL
-        (difference 0 255))
+        ((difference-op 1) 0))
       (test
-        "3.06.06: (difference 255 0)"
+        "3.06.06: ((difference-op 0) 1)"
         #:LEGAL
-        (difference 255 0))
+        ((difference-op 0) 1))
       (test
-        "3.06.07: (difference 1 0)"
+        "3.06.07: ((difference-op 0) 0.004)"
         #:LEGAL
-        (difference 1 0))
+        ((difference-op 0) 0.004))
       (test
-        "3.06.08: (difference 0 1)"
+        "3.06.08: ((difference-op 0.004) 0)"
         #:LEGAL
-        (difference 0 1))
+        ((difference-op 0.004) 0))
       (test
-        "3.06.09: (difference 254 255)"
+        "3.06.09: ((difference-op 1) 0.996)"
         #:LEGAL
-        (difference 254 255))
+        ((difference-op 1) 0.996))
       (test
-        "3.06.10: (difference 255 254)"
+        "3.06.10: ((difference-op 0.996) 1)"
         #:LEGAL
-        (difference 255 254))
+        ((difference-op 0.996) 1))
       (test
-        "3.06.11: (difference 29 28)"
+        "3.06.11: ((difference-op 0.110) 0.114)"
         #:LEGAL
-        (difference 29 28))
+        ((difference-op 0.110) 0.114))
       (test
-        "3.06.12: (difference 28 29)"
+        "3.06.12: ((difference-op 0.114) 0.110)"
         #:LEGAL
-        (difference 28 29))
+        ((difference-op 0.114) 0.110))
       (test
-        "3.06.13: (difference 17 204)"
+        "3.06.13: ((difference-op 0.800) 0.067)"
         #:LEGAL
-        (difference 17 204))
+        ((difference-op 0.800) 0.067))
       (test
-        "3.06.14: (difference 204 17)"
+        "3.06.14: ((difference-op 0.067) 0.800)"
         #:LEGAL
-        (difference 204 17))
+        ((difference-op 0.067) 0.800))
       (test
-        "3.06.15: (difference 59 80)"
+        "3.06.15: ((difference-op 0.314) 0.231)"
         #:LEGAL
-        (difference 59 80))
+        ((difference-op 0.314) 0.231))
       (test
-        "3.06.16: (difference 80 59)"
+        "3.06.16: ((difference-op 0.231) 0.314)"
         #:LEGAL
-        (difference 80 59)))
+        ((difference-op 0.231) 0.314)))
     (test-group "[3.07] addition"
       (test
-        "3.07.01: (addition 0 0)"
+        "3.07.01: ((addition-op 0) 0)"
         #:LEGAL
-        (addition 0 0))
+        ((addition-op 0) 0))
       (test
-        "3.07.02: (addition 17 17)"
+        "3.07.02: ((addition-op 0.067) 0.067)"
         #:LEGAL
-        (addition 17 17))
+        ((addition-op 0.067) 0.067))
       (test
-        "3.07.03: (addition 124 124)"
+        "3.07.03: ((addition-op 0.486) 0.486)"
         #:LEGAL
-        (addition 124 124))
+        ((addition-op 0.486) 0.486))
       (test
-        "3.07.04: (addition 255 255)"
+        "3.07.04: ((addition-op 1) 1)"
         #:LEGAL
-        (addition 255 255))
+        ((addition-op 1) 1))
       (test
-        "3.07.05: (addition 0 255)"
+        "3.07.05: ((addition-op 1) 0)"
         #:LEGAL
-        (addition 0 255))
+        ((addition-op 1) 0))
       (test
-        "3.07.06: (addition 255 0)"
+        "3.07.06: ((addition-op 0) 1)"
         #:LEGAL
-        (addition 255 0))
+        ((addition-op 0) 1))
       (test
-        "3.07.07: (addition 1 0)"
+        "3.07.07: ((addition-op 0) 0.004)"
         #:LEGAL
-        (addition 1 0))
+        ((addition-op 0) 0.004))
       (test
-        "3.07.08: (addition 0 1)"
+        "3.07.08: ((addition-op 0.004) 0)"
         #:LEGAL
-        (addition 0 1))
+        ((addition-op 0.004) 0))
       (test
-        "3.07.09: (addition 254 255)"
+        "3.07.09: ((addition-op 1) 0.996)"
         #:LEGAL
-        (addition 254 255))
+        ((addition-op 1) 0.996))
       (test
-        "3.07.10: (addition 255 254)"
+        "3.07.10: ((addition-op 0.996) 1)"
         #:LEGAL
-        (addition 255 254))
+        ((addition-op 0.996) 1))
       (test
-        "3.07.11: (addition 29 28)"
+        "3.07.11: ((addition-op 0.110) 0.114)"
         #:LEGAL
-        (addition 29 28))
+        ((addition-op 0.110) 0.114))
       (test
-        "3.07.12: (addition 28 29)"
+        "3.07.12: ((addition-op 0.114) 0.110)"
         #:LEGAL
-        (addition 28 29))
+        ((addition-op 0.114) 0.110))
       (test
-        "3.07.13: (addition 17 204)"
+        "3.07.13: ((addition-op 0.800) 0.067)"
         #:LEGAL
-        (addition 17 204))
+        ((addition-op 0.800) 0.067))
       (test
-        "3.07.14: (addition 204 17)"
+        "3.07.14: ((addition-op 0.067) 0.800)"
         #:LEGAL
-        (addition 204 17))
+        ((addition-op 0.067) 0.800))
       (test
-        "3.07.15: (addition 59 80)"
+        "3.07.15: ((addition-op 0.314) 0.231)"
         #:LEGAL
-        (addition 59 80))
+        ((addition-op 0.314) 0.231))
       (test
-        "3.07.16: (addition 80 59)"
+        "3.07.16: ((addition-op 0.231) 0.314)"
         #:LEGAL
-        (addition 80 59)))
+        ((addition-op 0.231) 0.314)))
     (test-group "[3.08] subtract"
       (test
-        "3.08.01: (subtract 0 0)"
+        "3.08.01: ((subtract-op 0) 0)"
         #:LEGAL
-        (subtract 0 0))
+        ((subtract-op 0) 0))
       (test
-        "3.08.02: (subtract 17 17)"
+        "3.08.02: ((subtract-op 0.067) 0.067)"
         #:LEGAL
-        (subtract 17 17))
+        ((subtract-op 0.067) 0.067))
       (test
-        "3.08.03: (subtract 124 124)"
+        "3.08.03: ((subtract-op 0.486) 0.486)"
         #:LEGAL
-        (subtract 124 124))
+        ((subtract-op 0.486) 0.486))
       (test
-        "3.08.04: (subtract 255 255)"
+        "3.08.04: ((subtract-op 1) 1)"
         #:LEGAL
-        (subtract 255 255))
+        ((subtract-op 1) 1))
       (test
-        "3.08.05: (subtract 0 255)"
+        "3.08.05: ((subtract-op 1) 0)"
         #:LEGAL
-        (subtract 0 255))
+        ((subtract-op 1) 0))
       (test
-        "3.08.06: (subtract 255 0)"
+        "3.08.06: ((subtract-op 0) 1)"
         #:LEGAL
-        (subtract 255 0))
+        ((subtract-op 0) 1))
       (test
-        "3.08.07: (subtract 1 0)"
+        "3.08.07: ((subtract-op 0) 0.004)"
         #:LEGAL
-        (subtract 1 0))
+        ((subtract-op 0) 0.004))
       (test
-        "3.08.08: (subtract 0 1)"
+        "3.08.08: ((subtract-op 0.004) 0)"
         #:LEGAL
-        (subtract 0 1))
+        ((subtract-op 0.004) 0))
       (test
-        "3.08.09: (subtract 254 255)"
+        "3.08.09: ((subtract-op 1) 0.996)"
         #:LEGAL
-        (subtract 254 255))
+        ((subtract-op 1) 0.996))
       (test
-        "3.08.10: (subtract 255 254)"
+        "3.08.10: ((subtract-op 0.996) 1)"
         #:LEGAL
-        (subtract 255 254))
+        ((subtract-op 0.996) 1))
       (test
-        "3.08.11: (subtract 29 28)"
+        "3.08.11: ((subtract-op 0.110) 0.114)"
         #:LEGAL
-        (subtract 29 28))
+        ((subtract-op 0.110) 0.114))
       (test
-        "3.08.12: (subtract 28 29)"
+        "3.08.12: ((subtract-op 0.114) 0.110)"
         #:LEGAL
-        (subtract 28 29))
+        ((subtract-op 0.114) 0.110))
       (test
-        "3.08.13: (subtract 17 204)"
+        "3.08.13: ((subtract-op 0.800) 0.067)"
         #:LEGAL
-        (subtract 17 204))
+        ((subtract-op 0.800) 0.067))
       (test
-        "3.08.14: (subtract 204 17)"
+        "3.08.14: ((subtract-op 0.067) 0.800)"
         #:LEGAL
-        (subtract 204 17))
+        ((subtract-op 0.067) 0.800))
       (test
-        "3.08.15: (subtract 59 80)"
+        "3.08.15: ((subtract-op 0.314) 0.231)"
         #:LEGAL
-        (subtract 59 80))
+        ((subtract-op 0.314) 0.231))
       (test
-        "3.08.16: (subtract 80 59)"
+        "3.08.16: ((subtract-op 0.231) 0.314)"
         #:LEGAL
-        (subtract 80 59)))
+        ((subtract-op 0.231) 0.314)))
     (test-group "[3.09] darken-only"
       (test
-        "3.09.01: (darken-only 0 0)"
+        "3.09.01: ((darken-only-op 0) 0)"
         #:LEGAL
-        (darken-only 0 0))
+        ((darken-only-op 0) 0))
       (test
-        "3.09.02: (darken-only 17 17)"
+        "3.09.02: ((darken-only-op 0.067) 0.067)"
         #:LEGAL
-        (darken-only 17 17))
+        ((darken-only-op 0.067) 0.067))
       (test
-        "3.09.03: (darken-only 124 124)"
+        "3.09.03: ((darken-only-op 0.486) 0.486)"
         #:LEGAL
-        (darken-only 124 124))
+        ((darken-only-op 0.486) 0.486))
       (test
-        "3.09.04: (darken-only 255 255)"
+        "3.09.04: ((darken-only-op 1) 1)"
         #:LEGAL
-        (darken-only 255 255))
+        ((darken-only-op 1) 1))
       (test
-        "3.09.05: (darken-only 0 255)"
+        "3.09.05: ((darken-only-op 1) 0)"
         #:LEGAL
-        (darken-only 0 255))
+        ((darken-only-op 1) 0))
       (test
-        "3.09.06: (darken-only 255 0)"
+        "3.09.06: ((darken-only-op 0) 1)"
         #:LEGAL
-        (darken-only 255 0))
+        ((darken-only-op 0) 1))
       (test
-        "3.09.07: (darken-only 1 0)"
+        "3.09.07: ((darken-only-op 0) 0.004)"
         #:LEGAL
-        (darken-only 1 0))
+        ((darken-only-op 0) 0.004))
       (test
-        "3.09.08: (darken-only 0 1)"
+        "3.09.08: ((darken-only-op 0.004) 0)"
         #:LEGAL
-        (darken-only 0 1))
+        ((darken-only-op 0.004) 0))
       (test
-        "3.09.09: (darken-only 254 255)"
+        "3.09.09: ((darken-only-op 1) 0.996)"
         #:LEGAL
-        (darken-only 254 255))
+        ((darken-only-op 1) 0.996))
       (test
-        "3.09.10: (darken-only 255 254)"
+        "3.09.10: ((darken-only-op 0.996) 1)"
         #:LEGAL
-        (darken-only 255 254))
+        ((darken-only-op 0.996) 1))
       (test
-        "3.09.11: (darken-only 29 28)"
+        "3.09.11: ((darken-only-op 0.110) 0.114)"
         #:LEGAL
-        (darken-only 29 28))
+        ((darken-only-op 0.110) 0.114))
       (test
-        "3.09.12: (darken-only 28 29)"
+        "3.09.12: ((darken-only-op 0.114) 0.110)"
         #:LEGAL
-        (darken-only 28 29))
+        ((darken-only-op 0.114) 0.110))
       (test
-        "3.09.13: (darken-only 17 204)"
+        "3.09.13: ((darken-only-op 0.800) 0.067)"
         #:LEGAL
-        (darken-only 17 204))
+        ((darken-only-op 0.800) 0.067))
       (test
-        "3.09.14: (darken-only 204 17)"
+        "3.09.14: ((darken-only-op 0.067) 0.800)"
         #:LEGAL
-        (darken-only 204 17))
+        ((darken-only-op 0.067) 0.800))
       (test
-        "3.09.15: (darken-only 59 80)"
+        "3.09.15: ((darken-only-op 0.314) 0.231)"
         #:LEGAL
-        (darken-only 59 80))
+        ((darken-only-op 0.314) 0.231))
       (test
-        "3.09.16: (darken-only 80 59)"
+        "3.09.16: ((darken-only-op 0.231) 0.314)"
         #:LEGAL
-        (darken-only 80 59)))
+        ((darken-only-op 0.231) 0.314)))
     (test-group "[3.10] lighten-only"
       (test
-        "3.10.01: (lighten-only 0 0)"
+        "3.10.01: ((lighten-only-op 0) 0)"
         #:LEGAL
-        (lighten-only 0 0))
+        ((lighten-only-op 0) 0))
       (test
-        "3.10.02: (lighten-only 17 17)"
+        "3.10.02: ((lighten-only-op 0.067) 0.067)"
         #:LEGAL
-        (lighten-only 17 17))
+        ((lighten-only-op 0.067) 0.067))
       (test
-        "3.10.03: (lighten-only 124 124)"
+        "3.10.03: ((lighten-only-op 0.486) 0.486)"
         #:LEGAL
-        (lighten-only 124 124))
+        ((lighten-only-op 0.486) 0.486))
       (test
-        "3.10.04: (lighten-only 255 255)"
+        "3.10.04: ((lighten-only-op 1) 1)"
         #:LEGAL
-        (lighten-only 255 255))
+        ((lighten-only-op 1) 1))
       (test
-        "3.10.05: (lighten-only 0 255)"
+        "3.10.05: ((lighten-only-op 1) 0)"
         #:LEGAL
-        (lighten-only 0 255))
+        ((lighten-only-op 1) 0))
       (test
-        "3.10.06: (lighten-only 255 0)"
+        "3.10.06: ((lighten-only-op 0) 1)"
         #:LEGAL
-        (lighten-only 255 0))
+        ((lighten-only-op 0) 1))
       (test
-        "3.10.07: (lighten-only 1 0)"
+        "3.10.07: ((lighten-only-op 0) 0.004)"
         #:LEGAL
-        (lighten-only 1 0))
+        ((lighten-only-op 0) 0.004))
       (test
-        "3.10.08: (lighten-only 0 1)"
+        "3.10.08: ((lighten-only-op 0.004) 0)"
         #:LEGAL
-        (lighten-only 0 1))
+        ((lighten-only-op 0.004) 0))
       (test
-        "3.10.09: (lighten-only 254 255)"
+        "3.10.09: ((lighten-only-op 1) 0.996)"
         #:LEGAL
-        (lighten-only 254 255))
+        ((lighten-only-op 1) 0.996))
       (test
-        "3.10.10: (lighten-only 255 254)"
+        "3.10.10: ((lighten-only-op 0.996) 1)"
         #:LEGAL
-        (lighten-only 255 254))
+        ((lighten-only-op 0.996) 1))
       (test
-        "3.10.11: (lighten-only 29 28)"
+        "3.10.11: ((lighten-only-op 0.110) 0.114)"
         #:LEGAL
-        (lighten-only 29 28))
+        ((lighten-only-op 0.110) 0.114))
       (test
-        "3.10.12: (lighten-only 28 29)"
+        "3.10.12: ((lighten-only-op 0.114) 0.110)"
         #:LEGAL
-        (lighten-only 28 29))
+        ((lighten-only-op 0.114) 0.110))
       (test
-        "3.10.13: (lighten-only 17 204)"
+        "3.10.13: ((lighten-only-op 0.800) 0.067)"
         #:LEGAL
-        (lighten-only 17 204))
+        ((lighten-only-op 0.800) 0.067))
       (test
-        "3.10.14: (lighten-only 204 17)"
+        "3.10.14: ((lighten-only-op 0.067) 0.800)"
         #:LEGAL
-        (lighten-only 204 17))
+        ((lighten-only-op 0.067) 0.800))
       (test
-        "3.10.15: (lighten-only 59 80)"
+        "3.10.15: ((lighten-only-op 0.314) 0.231)"
         #:LEGAL
-        (lighten-only 59 80))
+        ((lighten-only-op 0.314) 0.231))
       (test
-        "3.10.16: (lighten-only 80 59)"
+        "3.10.16: ((lighten-only-op 0.231) 0.314)"
         #:LEGAL
-        (lighten-only 80 59)))
+        ((lighten-only-op 0.231) 0.314)))
     (test-group "[3.11] divide"
       (test
-        "3.11.01: (divide 0 0)"
+        "3.11.01: ((divide-op 0) 0)"
         #:LEGAL
-        (divide 0 0))
+        ((divide-op 0) 0))
       (test
-        "3.11.02: (divide 17 17)"
+        "3.11.02: ((divide-op 0.067) 0.067)"
         #:LEGAL
-        (divide 17 17))
+        ((divide-op 0.067) 0.067))
       (test
-        "3.11.03: (divide 124 124)"
+        "3.11.03: ((divide-op 0.486) 0.486)"
         #:LEGAL
-        (divide 124 124))
+        ((divide-op 0.486) 0.486))
       (test
-        "3.11.04: (divide 255 255)"
+        "3.11.04: ((divide-op 1) 1)"
         #:LEGAL
-        (divide 255 255))
+        ((divide-op 1) 1))
       (test
-        "3.11.05: (divide 0 255)"
+        "3.11.05: ((divide-op 1) 0)"
         #:LEGAL
-        (divide 0 255))
+        ((divide-op 1) 0))
       (test
-        "3.11.06: (divide 255 0)"
+        "3.11.06: ((divide-op 0) 1)"
         #:LEGAL
-        (divide 255 0))
+        ((divide-op 0) 1))
       (test
-        "3.11.07: (divide 1 0)"
+        "3.11.07: ((divide-op 0) 0.004)"
         #:LEGAL
-        (divide 1 0))
+        ((divide-op 0) 0.004))
       (test
-        "3.11.08: (divide 0 1)"
+        "3.11.08: ((divide-op 0.004) 0)"
         #:LEGAL
-        (divide 0 1))
+        ((divide-op 0.004) 0))
       (test
-        "3.11.09: (divide 254 255)"
+        "3.11.09: ((divide-op 1) 0.996)"
         #:LEGAL
-        (divide 254 255))
+        ((divide-op 1) 0.996))
       (test
-        "3.11.10: (divide 255 254)"
+        "3.11.10: ((divide-op 0.996) 1)"
         #:LEGAL
-        (divide 255 254))
+        ((divide-op 0.996) 1))
       (test
-        "3.11.11: (divide 29 28)"
+        "3.11.11: ((divide-op 0.110) 0.114)"
         #:LEGAL
-        (divide 29 28))
+        ((divide-op 0.110) 0.114))
       (test
-        "3.11.12: (divide 28 29)"
+        "3.11.12: ((divide-op 0.114) 0.110)"
         #:LEGAL
-        (divide 28 29))
+        ((divide-op 0.114) 0.110))
       (test
-        "3.11.13: (divide 17 204)"
+        "3.11.13: ((divide-op 0.800) 0.067)"
         #:LEGAL
-        (divide 17 204))
+        ((divide-op 0.800) 0.067))
       (test
-        "3.11.14: (divide 204 17)"
+        "3.11.14: ((divide-op 0.067) 0.800)"
         #:LEGAL
-        (divide 204 17))
+        ((divide-op 0.067) 0.800))
       (test
-        "3.11.15: (divide 59 80)"
+        "3.11.15: ((divide-op 0.314) 0.231)"
         #:LEGAL
-        (divide 59 80))
+        ((divide-op 0.314) 0.231))
       (test
-        "3.11.16: (divide 80 59)"
+        "3.11.16: ((divide-op 0.231) 0.314)"
         #:LEGAL
-        (divide 80 59)))
+        ((divide-op 0.231) 0.314)))
     (test-group "[3.12] dodge"
       (test
-        "3.12.01: (dodge 0 0)"
+        "3.12.01: ((dodge-op 0) 0)"
         #:LEGAL
-        (dodge 0 0))
+        ((dodge-op 0) 0))
       (test
-        "3.12.02: (dodge 17 17)"
+        "3.12.02: ((dodge-op 0.067) 0.067)"
         #:LEGAL
-        (dodge 17 17))
+        ((dodge-op 0.067) 0.067))
       (test
-        "3.12.03: (dodge 124 124)"
+        "3.12.03: ((dodge-op 0.486) 0.486)"
         #:LEGAL
-        (dodge 124 124))
+        ((dodge-op 0.486) 0.486))
       (test
-        "3.12.04: (dodge 255 255)"
+        "3.12.04: ((dodge-op 1) 1)"
         #:LEGAL
-        (dodge 255 255))
+        ((dodge-op 1) 1))
       (test
-        "3.12.05: (dodge 0 255)"
+        "3.12.05: ((dodge-op 1) 0)"
         #:LEGAL
-        (dodge 0 255))
+        ((dodge-op 1) 0))
       (test
-        "3.12.06: (dodge 255 0)"
+        "3.12.06: ((dodge-op 0) 1)"
         #:LEGAL
-        (dodge 255 0))
+        ((dodge-op 0) 1))
       (test
-        "3.12.07: (dodge 1 0)"
+        "3.12.07: ((dodge-op 0) 0.004)"
         #:LEGAL
-        (dodge 1 0))
+        ((dodge-op 0) 0.004))
       (test
-        "3.12.08: (dodge 0 1)"
+        "3.12.08: ((dodge-op 0.004) 0)"
         #:LEGAL
-        (dodge 0 1))
+        ((dodge-op 0.004) 0))
       (test
-        "3.12.09: (dodge 254 255)"
+        "3.12.09: ((dodge-op 1) 0.996)"
         #:LEGAL
-        (dodge 254 255))
+        ((dodge-op 1) 0.996))
       (test
-        "3.12.10: (dodge 255 254)"
+        "3.12.10: ((dodge-op 0.996) 1)"
         #:LEGAL
-        (dodge 255 254))
+        ((dodge-op 0.996) 1))
       (test
-        "3.12.11: (dodge 29 28)"
+        "3.12.11: ((dodge-op 0.110) 0.114)"
         #:LEGAL
-        (dodge 29 28))
+        ((dodge-op 0.110) 0.114))
       (test
-        "3.12.12: (dodge 28 29)"
+        "3.12.12: ((dodge-op 0.114) 0.110)"
         #:LEGAL
-        (dodge 28 29))
+        ((dodge-op 0.114) 0.110))
       (test
-        "3.12.13: (dodge 17 204)"
+        "3.12.13: ((dodge-op 0.800) 0.067)"
         #:LEGAL
-        (dodge 17 204))
+        ((dodge-op 0.800) 0.067))
       (test
-        "3.12.14: (dodge 204 17)"
+        "3.12.14: ((dodge-op 0.067) 0.800)"
         #:LEGAL
-        (dodge 204 17))
+        ((dodge-op 0.067) 0.800))
       (test
-        "3.12.15: (dodge 59 80)"
+        "3.12.15: ((dodge-op 0.314) 0.231)"
         #:LEGAL
-        (dodge 59 80))
+        ((dodge-op 0.314) 0.231))
       (test
-        "3.12.16: (dodge 80 59)"
+        "3.12.16: ((dodge-op 0.231) 0.314)"
         #:LEGAL
-        (dodge 80 59)))
+        ((dodge-op 0.231) 0.314)))
     (test-group "[3.13] burn"
       (test
-        "3.13.01: (burn 0 0)"
+        "3.13.01: ((burn-op 0) 0)"
         #:LEGAL
-        (burn 0 0))
+        ((burn-op 0) 0))
       (test
-        "3.13.02: (burn 17 17)"
+        "3.13.02: ((burn-op 0.067) 0.067)"
         #:LEGAL
-        (burn 17 17))
+        ((burn-op 0.067) 0.067))
       (test
-        "3.13.03: (burn 124 124)"
+        "3.13.03: ((burn-op 0.486) 0.486)"
         #:LEGAL
-        (burn 124 124))
+        ((burn-op 0.486) 0.486))
       (test
-        "3.13.04: (burn 255 255)"
+        "3.13.04: ((burn-op 1) 1)"
         #:LEGAL
-        (burn 255 255))
+        ((burn-op 1) 1))
       (test
-        "3.13.05: (burn 0 255)"
+        "3.13.05: ((burn-op 1) 0)"
         #:LEGAL
-        (burn 0 255))
+        ((burn-op 1) 0))
       (test
-        "3.13.06: (burn 255 0)"
+        "3.13.06: ((burn-op 0) 1)"
         #:LEGAL
-        (burn 255 0))
+        ((burn-op 0) 1))
       (test
-        "3.13.07: (burn 1 0)"
+        "3.13.07: ((burn-op 0) 0.004)"
         #:LEGAL
-        (burn 1 0))
+        ((burn-op 0) 0.004))
       (test
-        "3.13.08: (burn 0 1)"
+        "3.13.08: ((burn-op 0.004) 0)"
         #:LEGAL
-        (burn 0 1))
+        ((burn-op 0.004) 0))
       (test
-        "3.13.09: (burn 254 255)"
+        "3.13.09: ((burn-op 1) 0.996)"
         #:LEGAL
-        (burn 254 255))
+        ((burn-op 1) 0.996))
       (test
-        "3.13.10: (burn 255 254)"
+        "3.13.10: ((burn-op 0.996) 1)"
         #:LEGAL
-        (burn 255 254))
+        ((burn-op 0.996) 1))
       (test
-        "3.13.11: (burn 29 28)"
+        "3.13.11: ((burn-op 0.110) 0.114)"
         #:LEGAL
-        (burn 29 28))
+        ((burn-op 0.110) 0.114))
       (test
-        "3.13.12: (burn 28 29)"
+        "3.13.12: ((burn-op 0.114) 0.110)"
         #:LEGAL
-        (burn 28 29))
+        ((burn-op 0.114) 0.110))
       (test
-        "3.13.13: (burn 17 204)"
+        "3.13.13: ((burn-op 0.800) 0.067)"
         #:LEGAL
-        (burn 17 204))
+        ((burn-op 0.800) 0.067))
       (test
-        "3.13.14: (burn 204 17)"
+        "3.13.14: ((burn-op 0.067) 0.800)"
         #:LEGAL
-        (burn 204 17))
+        ((burn-op 0.067) 0.800))
       (test
-        "3.13.15: (burn 59 80)"
+        "3.13.15: ((burn-op 0.314) 0.231)"
         #:LEGAL
-        (burn 59 80))
+        ((burn-op 0.314) 0.231))
       (test
-        "3.13.16: (burn 80 59)"
+        "3.13.16: ((burn-op 0.231) 0.314)"
         #:LEGAL
-        (burn 80 59)))
+        ((burn-op 0.231) 0.314)))
     (test-group "[3.14] hard-light"
       (test
-        "3.14.01: (hard-light 0 0)"
+        "3.14.01: ((hard-light-op 0) 0)"
         #:LEGAL
-        (hard-light 0 0))
+        ((hard-light-op 0) 0))
       (test
-        "3.14.02: (hard-light 17 17)"
+        "3.14.02: ((hard-light-op 0.067) 0.067)"
         #:LEGAL
-        (hard-light 17 17))
+        ((hard-light-op 0.067) 0.067))
       (test
-        "3.14.03: (hard-light 124 124)"
+        "3.14.03: ((hard-light-op 0.486) 0.486)"
         #:LEGAL
-        (hard-light 124 124))
+        ((hard-light-op 0.486) 0.486))
       (test
-        "3.14.04: (hard-light 255 255)"
+        "3.14.04: ((hard-light-op 1) 1)"
         #:LEGAL
-        (hard-light 255 255))
+        ((hard-light-op 1) 1))
       (test
-        "3.14.05: (hard-light 0 255)"
+        "3.14.05: ((hard-light-op 1) 0)"
         #:LEGAL
-        (hard-light 0 255))
+        ((hard-light-op 1) 0))
       (test
-        "3.14.06: (hard-light 255 0)"
+        "3.14.06: ((hard-light-op 0) 1)"
         #:LEGAL
-        (hard-light 255 0))
+        ((hard-light-op 0) 1))
       (test
-        "3.14.07: (hard-light 1 0)"
+        "3.14.07: ((hard-light-op 0) 0.004)"
         #:LEGAL
-        (hard-light 1 0))
+        ((hard-light-op 0) 0.004))
       (test
-        "3.14.08: (hard-light 0 1)"
+        "3.14.08: ((hard-light-op 0.004) 0)"
         #:LEGAL
-        (hard-light 0 1))
+        ((hard-light-op 0.004) 0))
       (test
-        "3.14.09: (hard-light 254 255)"
+        "3.14.09: ((hard-light-op 1) 0.996)"
         #:LEGAL
-        (hard-light 254 255))
+        ((hard-light-op 1) 0.996))
       (test
-        "3.14.10: (hard-light 255 254)"
+        "3.14.10: ((hard-light-op 0.996) 1)"
         #:LEGAL
-        (hard-light 255 254))
+        ((hard-light-op 0.996) 1))
       (test
-        "3.14.11: (hard-light 29 28)"
+        "3.14.11: ((hard-light-op 0.110) 0.114)"
         #:LEGAL
-        (hard-light 29 28))
+        ((hard-light-op 0.110) 0.114))
       (test
-        "3.14.12: (hard-light 28 29)"
+        "3.14.12: ((hard-light-op 0.114) 0.110)"
         #:LEGAL
-        (hard-light 28 29))
+        ((hard-light-op 0.114) 0.110))
       (test
-        "3.14.13: (hard-light 17 204)"
+        "3.14.13: ((hard-light-op 0.800) 0.067)"
         #:LEGAL
-        (hard-light 17 204))
+        ((hard-light-op 0.800) 0.067))
       (test
-        "3.14.14: (hard-light 204 17)"
+        "3.14.14: ((hard-light-op 0.067) 0.800)"
         #:LEGAL
-        (hard-light 204 17))
+        ((hard-light-op 0.067) 0.800))
       (test
-        "3.14.15: (hard-light 59 80)"
+        "3.14.15: ((hard-light-op 0.314) 0.231)"
         #:LEGAL
-        (hard-light 59 80))
+        ((hard-light-op 0.314) 0.231))
       (test
-        "3.14.16: (hard-light 80 59)"
+        "3.14.16: ((hard-light-op 0.231) 0.314)"
         #:LEGAL
-        (hard-light 80 59)))
+        ((hard-light-op 0.231) 0.314)))
     (test-group "[3.15] soft-light"
       (test
-        "3.15.01: (soft-light 0 0)"
+        "3.15.01: ((soft-light-op 0) 0)"
         #:LEGAL
-        (soft-light 0 0))
+        ((soft-light-op 0) 0))
       (test
-        "3.15.02: (soft-light 17 17)"
+        "3.15.02: ((soft-light-op 0.067) 0.067)"
         #:LEGAL
-        (soft-light 17 17))
+        ((soft-light-op 0.067) 0.067))
       (test
-        "3.15.03: (soft-light 124 124)"
+        "3.15.03: ((soft-light-op 0.486) 0.486)"
         #:LEGAL
-        (soft-light 124 124))
+        ((soft-light-op 0.486) 0.486))
       (test
-        "3.15.04: (soft-light 255 255)"
+        "3.15.04: ((soft-light-op 1) 1)"
         #:LEGAL
-        (soft-light 255 255))
+        ((soft-light-op 1) 1))
       (test
-        "3.15.05: (soft-light 0 255)"
+        "3.15.05: ((soft-light-op 1) 0)"
         #:LEGAL
-        (soft-light 0 255))
+        ((soft-light-op 1) 0))
       (test
-        "3.15.06: (soft-light 255 0)"
+        "3.15.06: ((soft-light-op 0) 1)"
         #:LEGAL
-        (soft-light 255 0))
+        ((soft-light-op 0) 1))
       (test
-        "3.15.07: (soft-light 1 0)"
+        "3.15.07: ((soft-light-op 0) 0.004)"
         #:LEGAL
-        (soft-light 1 0))
+        ((soft-light-op 0) 0.004))
       (test
-        "3.15.08: (soft-light 0 1)"
+        "3.15.08: ((soft-light-op 0.004) 0)"
         #:LEGAL
-        (soft-light 0 1))
+        ((soft-light-op 0.004) 0))
       (test
-        "3.15.09: (soft-light 254 255)"
+        "3.15.09: ((soft-light-op 1) 0.996)"
         #:LEGAL
-        (soft-light 254 255))
+        ((soft-light-op 1) 0.996))
       (test
-        "3.15.10: (soft-light 255 254)"
+        "3.15.10: ((soft-light-op 0.996) 1)"
         #:LEGAL
-        (soft-light 255 254))
+        ((soft-light-op 0.996) 1))
       (test
-        "3.15.11: (soft-light 29 28)"
+        "3.15.11: ((soft-light-op 0.110) 0.114)"
         #:LEGAL
-        (soft-light 29 28))
+        ((soft-light-op 0.110) 0.114))
       (test
-        "3.15.12: (soft-light 28 29)"
+        "3.15.12: ((soft-light-op 0.114) 0.110)"
         #:LEGAL
-        (soft-light 28 29))
+        ((soft-light-op 0.114) 0.110))
       (test
-        "3.15.13: (soft-light 17 204)"
+        "3.15.13: ((soft-light-op 0.800) 0.067)"
         #:LEGAL
-        (soft-light 17 204))
+        ((soft-light-op 0.800) 0.067))
       (test
-        "3.15.14: (soft-light 204 17)"
+        "3.15.14: ((soft-light-op 0.067) 0.800)"
         #:LEGAL
-        (soft-light 204 17))
+        ((soft-light-op 0.067) 0.800))
       (test
-        "3.15.15: (soft-light 59 80)"
+        "3.15.15: ((soft-light-op 0.314) 0.231)"
         #:LEGAL
-        (soft-light 59 80))
+        ((soft-light-op 0.314) 0.231))
       (test
-        "3.15.16: (soft-light 80 59)"
+        "3.15.16: ((soft-light-op 0.231) 0.314)"
         #:LEGAL
-        (soft-light 80 59)))
+        ((soft-light-op 0.231) 0.314)))
     (test-group "[3.16] grain-extract"
       (test
-        "3.16.01: (grain-extract 0 0)"
+        "3.16.01: ((grain-extract-op 0) 0)"
         #:LEGAL
-        (grain-extract 0 0))
+        ((grain-extract-op 0) 0))
       (test
-        "3.16.02: (grain-extract 17 17)"
+        "3.16.02: ((grain-extract-op 0.067) 0.067)"
         #:LEGAL
-        (grain-extract 17 17))
+        ((grain-extract-op 0.067) 0.067))
       (test
-        "3.16.03: (grain-extract 124 124)"
+        "3.16.03: ((grain-extract-op 0.486) 0.486)"
         #:LEGAL
-        (grain-extract 124 124))
+        ((grain-extract-op 0.486) 0.486))
       (test
-        "3.16.04: (grain-extract 255 255)"
+        "3.16.04: ((grain-extract-op 1) 1)"
         #:LEGAL
-        (grain-extract 255 255))
+        ((grain-extract-op 1) 1))
       (test
-        "3.16.05: (grain-extract 0 255)"
+        "3.16.05: ((grain-extract-op 1) 0)"
         #:LEGAL
-        (grain-extract 0 255))
+        ((grain-extract-op 1) 0))
       (test
-        "3.16.06: (grain-extract 255 0)"
+        "3.16.06: ((grain-extract-op 0) 1)"
         #:LEGAL
-        (grain-extract 255 0))
+        ((grain-extract-op 0) 1))
       (test
-        "3.16.07: (grain-extract 1 0)"
+        "3.16.07: ((grain-extract-op 0) 0.004)"
         #:LEGAL
-        (grain-extract 1 0))
+        ((grain-extract-op 0) 0.004))
       (test
-        "3.16.08: (grain-extract 0 1)"
+        "3.16.08: ((grain-extract-op 0.004) 0)"
         #:LEGAL
-        (grain-extract 0 1))
+        ((grain-extract-op 0.004) 0))
       (test
-        "3.16.09: (grain-extract 254 255)"
+        "3.16.09: ((grain-extract-op 1) 0.996)"
         #:LEGAL
-        (grain-extract 254 255))
+        ((grain-extract-op 1) 0.996))
       (test
-        "3.16.10: (grain-extract 255 254)"
+        "3.16.10: ((grain-extract-op 0.996) 1)"
         #:LEGAL
-        (grain-extract 255 254))
+        ((grain-extract-op 0.996) 1))
       (test
-        "3.16.11: (grain-extract 29 28)"
+        "3.16.11: ((grain-extract-op 0.110) 0.114)"
         #:LEGAL
-        (grain-extract 29 28))
+        ((grain-extract-op 0.110) 0.114))
       (test
-        "3.16.12: (grain-extract 28 29)"
+        "3.16.12: ((grain-extract-op 0.114) 0.110)"
         #:LEGAL
-        (grain-extract 28 29))
+        ((grain-extract-op 0.114) 0.110))
       (test
-        "3.16.13: (grain-extract 17 204)"
+        "3.16.13: ((grain-extract-op 0.800) 0.067)"
         #:LEGAL
-        (grain-extract 17 204))
+        ((grain-extract-op 0.800) 0.067))
       (test
-        "3.16.14: (grain-extract 204 17)"
+        "3.16.14: ((grain-extract-op 0.067) 0.800)"
         #:LEGAL
-        (grain-extract 204 17))
+        ((grain-extract-op 0.067) 0.800))
       (test
-        "3.16.15: (grain-extract 59 80)"
+        "3.16.15: ((grain-extract-op 0.314) 0.231)"
         #:LEGAL
-        (grain-extract 59 80))
+        ((grain-extract-op 0.314) 0.231))
       (test
-        "3.16.16: (grain-extract 80 59)"
+        "3.16.16: ((grain-extract-op 0.231) 0.314)"
         #:LEGAL
-        (grain-extract 80 59)))
+        ((grain-extract-op 0.231) 0.314)))
     (test-group "[3.17] grain-merge"
       (test
-        "3.17.01: (grain-merge 0 0)"
+        "3.17.01: ((grain-merge-op 0) 0)"
         #:LEGAL
-        (grain-merge 0 0))
+        ((grain-merge-op 0) 0))
       (test
-        "3.17.02: (grain-merge 17 17)"
+        "3.17.02: ((grain-merge-op 0.067) 0.067)"
         #:LEGAL
-        (grain-merge 17 17))
+        ((grain-merge-op 0.067) 0.067))
       (test
-        "3.17.03: (grain-merge 124 124)"
+        "3.17.03: ((grain-merge-op 0.486) 0.486)"
         #:LEGAL
-        (grain-merge 124 124))
+        ((grain-merge-op 0.486) 0.486))
       (test
-        "3.17.04: (grain-merge 255 255)"
+        "3.17.04: ((grain-merge-op 1) 1)"
         #:LEGAL
-        (grain-merge 255 255))
+        ((grain-merge-op 1) 1))
       (test
-        "3.17.05: (grain-merge 0 255)"
+        "3.17.05: ((grain-merge-op 1) 0)"
         #:LEGAL
-        (grain-merge 0 255))
+        ((grain-merge-op 1) 0))
       (test
-        "3.17.06: (grain-merge 255 0)"
+        "3.17.06: ((grain-merge-op 0) 1)"
         #:LEGAL
-        (grain-merge 255 0))
+        ((grain-merge-op 0) 1))
       (test
-        "3.17.07: (grain-merge 1 0)"
+        "3.17.07: ((grain-merge-op 0) 0.004)"
         #:LEGAL
-        (grain-merge 1 0))
+        ((grain-merge-op 0) 0.004))
       (test
-        "3.17.08: (grain-merge 0 1)"
+        "3.17.08: ((grain-merge-op 0.004) 0)"
         #:LEGAL
-        (grain-merge 0 1))
+        ((grain-merge-op 0.004) 0))
       (test
-        "3.17.09: (grain-merge 254 255)"
+        "3.17.09: ((grain-merge-op 1) 0.996)"
         #:LEGAL
-        (grain-merge 254 255))
+        ((grain-merge-op 1) 0.996))
       (test
-        "3.17.10: (grain-merge 255 254)"
+        "3.17.10: ((grain-merge-op 0.996) 1)"
         #:LEGAL
-        (grain-merge 255 254))
+        ((grain-merge-op 0.996) 1))
       (test
-        "3.17.11: (grain-merge 29 28)"
+        "3.17.11: ((grain-merge-op 0.110) 0.114)"
         #:LEGAL
-        (grain-merge 29 28))
+        ((grain-merge-op 0.110) 0.114))
       (test
-        "3.17.12: (grain-merge 28 29)"
+        "3.17.12: ((grain-merge-op 0.114) 0.110)"
         #:LEGAL
-        (grain-merge 28 29))
+        ((grain-merge-op 0.114) 0.110))
       (test
-        "3.17.13: (grain-merge 17 204)"
+        "3.17.13: ((grain-merge-op 0.800) 0.067)"
         #:LEGAL
-        (grain-merge 17 204))
+        ((grain-merge-op 0.800) 0.067))
       (test
-        "3.17.14: (grain-merge 204 17)"
+        "3.17.14: ((grain-merge-op 0.067) 0.800)"
         #:LEGAL
-        (grain-merge 204 17))
+        ((grain-merge-op 0.067) 0.800))
       (test
-        "3.17.15: (grain-merge 59 80)"
+        "3.17.15: ((grain-merge-op 0.314) 0.231)"
         #:LEGAL
-        (grain-merge 59 80))
+        ((grain-merge-op 0.314) 0.231))
       (test
-        "3.17.16: (grain-merge 80 59)"
+        "3.17.16: ((grain-merge-op 0.231) 0.314)"
         #:LEGAL
-        (grain-merge 80 59)))
+        ((grain-merge-op 0.231) 0.314)))
 ))
 
 (test-group "[4] HSV blend ops produce legal results w/ legal input"
   (with-comparator legal-hsv
     (test-group "[4.01] color"
       (test
-        "4.01.01: (color 0 0 0 0 0 0)"
+        "4.01.01: ((color-op 0 0 0) 0 0 0)"
         #:LEGAL
-        (collect-values color 0 0 0 0 0 0))
+        (collect-values (color-op 0 0 0) 0 0 0))
       (test
-        "4.01.02: (color 0 1 1 0 0 0)"
+        "4.01.02: ((color-op 0 0 0) 0 1 1)"
         #:LEGAL
-        (collect-values color 0 1 1 0 0 0 ))
+        (collect-values (color-op 0 0 0) 0 1 1))
       (test
-        "4.01.03: (color 0 1 1 0 1 1)"
+        "4.01.03: ((color-op 0 1 1) 0 1 1)"
         #:LEGAL
-        (collect-values color 0 1 1 0 1 1))
+        (collect-values (color-op 0 1 1) 0 1 1))
       (test
-        "4.01.04: (color 360 0 0 0 0 0)"
+        "4.01.04: ((color-op 0 0 0) 360 0 0)"
         #:LEGAL
-        (collect-values color 360 0 0 0 0 0))
+        (collect-values (color-op 0 0 0) 360 0 0))
       (test
-        "4.01.05: (color 360 1 1 360 1 1)"
+        "4.01.05: ((color-op 360 1 1) 360 1 1)"
         #:LEGAL
-        (collect-values color 360 1 1 360 1 1))
+        (collect-values (color-op 360 1 1) 360 1 1))
       (test
-        "4.01.06: (color 360 0 0 0 1 1)"
+        "4.01.06: ((color-op 0 1 1) 360 0 0)"
         #:LEGAL
-        (collect-values color 360 0 0 0 1 1))
+        (collect-values (color-op 0 1 1) 360 0 0))
       (test
-        "4.01.07: (color 360 1 1 360 0 0)"
+        "4.01.07: ((color-op 360 0 0) 360 1 1)"
         #:LEGAL
-        (collect-values color 360 1 1 360 0 0))
+        (collect-values (color-op 360 0 0) 360 1 1))
       (test
-        "4.01.08: (color 118 0.5 0.25 118 0.5 0.25)"
+        "4.01.08: ((color-op 118 0.5 0.25) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values color 118 0.5 0.25 118 0.5 0.25))
+        (collect-values (color-op 118 0.5 0.25) 118 0.5 0.25))
       (test
-        "4.01.09: (color 118 0.5 0.25 99 1 1)"
+        "4.01.09: ((color-op 99 1 1) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values color 118 0.5 0.25 99 1 1))
+        (collect-values (color-op 99 1 1) 118 0.5 0.25))
       (test
-        "4.01.10: (color 118 0.5 0.25 99 0 0)"
+        "4.01.10: ((color-op 99 0 0) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values color 118 0.5 0.25 99 0 0))
+        (collect-values (color-op 99 0 0) 118 0.5 0.25))
       (test
-        "4.01.11: (color 271 0.01 0.002 44 1 0.007)"
+        "4.01.11: ((color-op 44 1 0.007) 271 0.01 0.002)"
         #:LEGAL
-        (collect-values color 271 0.01 0.002 44 1 0.007))
+        (collect-values (color-op 44 1 0.007) 271 0.01 0.002))
       (test
-        "4.01.12: (color 224 0.999 0.9 31 1 1)"
+        "4.01.12: ((color-op 31 1 1) 224 0.999 0.9)"
         #:LEGAL
-        (collect-values color 224 0.999 0.9 31 1 1))
+        (collect-values (color-op 31 1 1) 224 0.999 0.9))
       (test
-        "4.01.13: (color 88 0 1 88 0.02 0.93)"
+        "4.01.13: ((color-op 88 0.02 0.93) 88 0 1)"
         #:LEGAL
-        (collect-values color 88 0 1 88 0.02 0.93))
+        (collect-values (color-op 88 0.02 0.93) 88 0 1))
       (test
-        "4.01.14: (color 88 0 1 88 1 0)"
+        "4.01.14: ((color-op 88 1 0) 88 0 1)"
         #:LEGAL
-        (collect-values color 88 0 1 88 1 0))
+        (collect-values (color-op 88 1 0) 88 0 1))
       (test
-        "4.01.15: (color 74 1 0 75 0.95 0.0001)"
+        "4.01.15: ((color-op 75 0.95 0.0001) 74 1 0)"
         #:LEGAL
-        (collect-values color 74 1 0 75 0.95 0.0001))
+        (collect-values (color-op 75 0.95 0.0001) 74 1 0))
       (test
-        "4.01.16: (color 144 1.0 0.999 299 0.65 0.07)"
+        "4.01.16: ((color-op 299 0.65 0.07) 144 1.0 0.999)"
         #:LEGAL
-        (collect-values color 144 1.0 0.999 299 0.65 0.07))
+        (collect-values (color-op 299 0.65 0.07) 144 1.0 0.999))
       (test
-        "4.01.17: (color 243 0.0007 0.4 248 0.002 1.0)"
+        "4.01.17: ((color-op 248 0.002 1.0) 243 0.0007 0.4)"
         #:LEGAL
-        (collect-values color 243 0.0007 0.4 248 0.002 1.0)))
+        (collect-values (color-op 248 0.002 1.0) 243 0.0007 0.4)))
     (test-group "[4.02] hue"
       (test
-        "4.02.01: (hue 0 0 0 0 0 0)"
+        "4.02.01: ((hue-op 0 0 0) 0 0 0)"
         #:LEGAL
-        (collect-values hue 0 0 0 0 0 0))
+        (collect-values (hue-op 0 0 0) 0 0 0))
       (test
-        "4.02.02: (hue 0 1 1 0 0 0)"
+        "4.02.02: ((hue-op 0 0 0) 0 1 1)"
         #:LEGAL
-        (collect-values hue 0 1 1 0 0 0 ))
+        (collect-values (hue-op 0 0 0) 0 1 1))
       (test
-        "4.02.03: (hue 0 1 1 0 1 1)"
+        "4.02.03: ((hue-op 0 1 1) 0 1 1)"
         #:LEGAL
-        (collect-values hue 0 1 1 0 1 1))
+        (collect-values (hue-op 0 1 1) 0 1 1))
       (test
-        "4.02.04: (hue 360 0 0 0 0 0)"
+        "4.02.04: ((hue-op 0 0 0) 360 0 0)"
         #:LEGAL
-        (collect-values hue 360 0 0 0 0 0))
+        (collect-values (hue-op 0 0 0) 360 0 0))
       (test
-        "4.02.05: (hue 360 1 1 360 1 1)"
+        "4.02.05: ((hue-op 360 1 1) 360 1 1)"
         #:LEGAL
-        (collect-values hue 360 1 1 360 1 1))
+        (collect-values (hue-op 360 1 1) 360 1 1))
       (test
-        "4.02.06: (hue 360 0 0 0 1 1)"
+        "4.02.06: ((hue-op 0 1 1) 360 0 0)"
         #:LEGAL
-        (collect-values hue 360 0 0 0 1 1))
+        (collect-values (hue-op 0 1 1) 360 0 0))
       (test
-        "4.02.07: (hue 360 1 1 360 0 0)"
+        "4.02.07: ((hue-op 360 0 0) 360 1 1)"
         #:LEGAL
-        (collect-values hue 360 1 1 360 0 0))
+        (collect-values (hue-op 360 0 0) 360 1 1))
       (test
-        "4.02.08: (hue 118 0.5 0.25 118 0.5 0.25)"
+        "4.02.08: ((hue-op 118 0.5 0.25) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values hue 118 0.5 0.25 118 0.5 0.25))
+        (collect-values (hue-op 118 0.5 0.25) 118 0.5 0.25))
       (test
-        "4.02.09: (hue 118 0.5 0.25 99 1 1)"
+        "4.02.09: ((hue-op 99 1 1) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values hue 118 0.5 0.25 99 1 1))
+        (collect-values (hue-op 99 1 1) 118 0.5 0.25))
       (test
-        "4.02.10: (hue 118 0.5 0.25 99 0 0)"
+        "4.02.10: ((hue-op 99 0 0) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values hue 118 0.5 0.25 99 0 0))
+        (collect-values (hue-op 99 0 0) 118 0.5 0.25))
       (test
-        "4.02.11: (hue 271 0.01 0.002 44 1 0.007)"
+        "4.02.11: ((hue-op 44 1 0.007) 271 0.01 0.002)"
         #:LEGAL
-        (collect-values hue 271 0.01 0.002 44 1 0.007))
+        (collect-values (hue-op 44 1 0.007) 271 0.01 0.002))
       (test
-        "4.02.12: (hue 224 0.999 0.9 31 1 1)"
+        "4.02.12: ((hue-op 31 1 1) 224 0.999 0.9)"
         #:LEGAL
-        (collect-values hue 224 0.999 0.9 31 1 1))
+        (collect-values (hue-op 31 1 1) 224 0.999 0.9))
       (test
-        "4.02.13: (hue 88 0 1 88 0.02 0.93)"
+        "4.02.13: ((hue-op 88 0.02 0.93) 88 0 1)"
         #:LEGAL
-        (collect-values hue 88 0 1 88 0.02 0.93))
+        (collect-values (hue-op 88 0.02 0.93) 88 0 1))
       (test
-        "4.02.14: (hue 88 0 1 88 1 0)"
+        "4.02.14: ((hue-op 88 1 0) 88 0 1)"
         #:LEGAL
-        (collect-values hue 88 0 1 88 1 0))
+        (collect-values (hue-op 88 1 0) 88 0 1))
       (test
-        "4.02.15: (hue 74 1 0 75 0.95 0.0001)"
+        "4.02.15: ((hue-op 75 0.95 0.0001) 74 1 0)"
         #:LEGAL
-        (collect-values hue 74 1 0 75 0.95 0.0001))
+        (collect-values (hue-op 75 0.95 0.0001) 74 1 0))
       (test
-        "4.02.16: (hue 144 1.0 0.999 299 0.65 0.07)"
+        "4.02.16: ((hue-op 299 0.65 0.07) 144 1.0 0.999)"
         #:LEGAL
-        (collect-values hue 144 1.0 0.999 299 0.65 0.07))
+        (collect-values (hue-op 299 0.65 0.07) 144 1.0 0.999))
       (test
-        "4.02.17: (hue 243 0.0007 0.4 248 0.002 1.0)"
+        "4.02.17: ((hue-op 248 0.002 1.0) 243 0.0007 0.4)"
         #:LEGAL
-        (collect-values hue 243 0.0007 0.4 248 0.002 1.0)))
+        (collect-values (hue-op 248 0.002 1.0) 243 0.0007 0.4)))
     (test-group "[4.03] saturation"
       (test
-        "4.03.01: (saturation 0 0 0 0 0 0)"
+        "4.03.01: ((saturation-op 0 0 0) 0 0 0)"
         #:LEGAL
-        (collect-values saturation 0 0 0 0 0 0))
+        (collect-values (saturation-op 0 0 0) 0 0 0))
       (test
-        "4.03.02: (saturation 0 1 1 0 0 0)"
+        "4.03.02: ((saturation-op 0 0 0) 0 1 1)"
         #:LEGAL
-        (collect-values saturation 0 1 1 0 0 0 ))
+        (collect-values (saturation-op 0 0 0) 0 1 1))
       (test
-        "4.03.03: (saturation 0 1 1 0 1 1)"
+        "4.03.03: ((saturation-op 0 1 1) 0 1 1)"
         #:LEGAL
-        (collect-values saturation 0 1 1 0 1 1))
+        (collect-values (saturation-op 0 1 1) 0 1 1))
       (test
-        "4.03.04: (saturation 360 0 0 0 0 0)"
+        "4.03.04: ((saturation-op 0 0 0) 360 0 0)"
         #:LEGAL
-        (collect-values saturation 360 0 0 0 0 0))
+        (collect-values (saturation-op 0 0 0) 360 0 0))
       (test
-        "4.03.05: (saturation 360 1 1 360 1 1)"
+        "4.03.05: ((saturation-op 360 1 1) 360 1 1)"
         #:LEGAL
-        (collect-values saturation 360 1 1 360 1 1))
+        (collect-values (saturation-op 360 1 1) 360 1 1))
       (test
-        "4.03.06: (saturation 360 0 0 0 1 1)"
+        "4.03.06: ((saturation-op 0 1 1) 360 0 0)"
         #:LEGAL
-        (collect-values saturation 360 0 0 0 1 1))
+        (collect-values (saturation-op 0 1 1) 360 0 0))
       (test
-        "4.03.07: (saturation 360 1 1 360 0 0)"
+        "4.03.07: ((saturation-op 360 0 0) 360 1 1)"
         #:LEGAL
-        (collect-values saturation 360 1 1 360 0 0))
+        (collect-values (saturation-op 360 0 0) 360 1 1))
       (test
-        "4.03.08: (saturation 118 0.5 0.25 118 0.5 0.25)"
+        "4.03.08: ((saturation-op 118 0.5 0.25) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values saturation 118 0.5 0.25 118 0.5 0.25))
+        (collect-values (saturation-op 118 0.5 0.25) 118 0.5 0.25))
       (test
-        "4.03.09: (saturation 118 0.5 0.25 99 1 1)"
+        "4.03.09: ((saturation-op 99 1 1) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values saturation 118 0.5 0.25 99 1 1))
+        (collect-values (saturation-op 99 1 1) 118 0.5 0.25))
       (test
-        "4.03.10: (saturation 118 0.5 0.25 99 0 0)"
+        "4.03.10: ((saturation-op 99 0 0) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values saturation 118 0.5 0.25 99 0 0))
+        (collect-values (saturation-op 99 0 0) 118 0.5 0.25))
       (test
-        "4.03.11: (saturation 271 0.01 0.002 44 1 0.007)"
+        "4.03.11: ((saturation-op 44 1 0.007) 271 0.01 0.002)"
         #:LEGAL
-        (collect-values saturation 271 0.01 0.002 44 1 0.007))
+        (collect-values (saturation-op 44 1 0.007) 271 0.01 0.002))
       (test
-        "4.03.12: (saturation 224 0.999 0.9 31 1 1)"
+        "4.03.12: ((saturation-op 31 1 1) 224 0.999 0.9)"
         #:LEGAL
-        (collect-values saturation 224 0.999 0.9 31 1 1))
+        (collect-values (saturation-op 31 1 1) 224 0.999 0.9))
       (test
-        "4.03.13: (saturation 88 0 1 88 0.02 0.93)"
+        "4.03.13: ((saturation-op 88 0.02 0.93) 88 0 1)"
         #:LEGAL
-        (collect-values saturation 88 0 1 88 0.02 0.93))
+        (collect-values (saturation-op 88 0.02 0.93) 88 0 1))
       (test
-        "4.03.14: (saturation 88 0 1 88 1 0)"
+        "4.03.14: ((saturation-op 88 1 0) 88 0 1)"
         #:LEGAL
-        (collect-values saturation 88 0 1 88 1 0))
+        (collect-values (saturation-op 88 1 0) 88 0 1))
       (test
-        "4.03.15: (saturation 74 1 0 75 0.95 0.0001)"
+        "4.03.15: ((saturation-op 75 0.95 0.0001) 74 1 0)"
         #:LEGAL
-        (collect-values saturation 74 1 0 75 0.95 0.0001))
+        (collect-values (saturation-op 75 0.95 0.0001) 74 1 0))
       (test
-        "4.03.16: (saturation 144 1.0 0.999 299 0.65 0.07)"
+        "4.03.16: ((saturation-op 299 0.65 0.07) 144 1.0 0.999)"
         #:LEGAL
-        (collect-values saturation 144 1.0 0.999 299 0.65 0.07))
+        (collect-values (saturation-op 299 0.65 0.07) 144 1.0 0.999))
       (test
-        "4.03.17: (saturation 243 0.0007 0.4 248 0.002 1.0)"
+        "4.03.17: ((saturation-op 248 0.002 1.0) 243 0.0007 0.4)"
         #:LEGAL
-        (collect-values saturation 243 0.0007 0.4 248 0.002 1.0)))
+        (collect-values (saturation-op 248 0.002 1.0) 243 0.0007 0.4)))
     (test-group "[4.04] value"
       (test
-        "4.04.01: (value 0 0 0 0 0 0)"
+        "4.04.01: ((value-op 0 0 0) 0 0 0)"
         #:LEGAL
-        (collect-values value 0 0 0 0 0 0))
+        (collect-values (value-op 0 0 0) 0 0 0))
       (test
-        "4.04.02: (value 0 1 1 0 0 0)"
+        "4.04.02: ((value-op 0 0 0) 0 1 1)"
         #:LEGAL
-        (collect-values value 0 1 1 0 0 0 ))
+        (collect-values (value-op 0 0 0) 0 1 1))
       (test
-        "4.04.03: (value 0 1 1 0 1 1)"
+        "4.04.03: ((value-op 0 1 1) 0 1 1)"
         #:LEGAL
-        (collect-values value 0 1 1 0 1 1))
+        (collect-values (value-op 0 1 1) 0 1 1))
       (test
-        "4.04.04: (value 360 0 0 0 0 0)"
+        "4.04.04: ((value-op 0 0 0) 360 0 0)"
         #:LEGAL
-        (collect-values value 360 0 0 0 0 0))
+        (collect-values (value-op 0 0 0) 360 0 0))
       (test
-        "4.04.05: (value 360 1 1 360 1 1)"
+        "4.04.05: ((value-op 360 1 1) 360 1 1)"
         #:LEGAL
-        (collect-values value 360 1 1 360 1 1))
+        (collect-values (value-op 360 1 1) 360 1 1))
       (test
-        "4.04.06: (value 360 0 0 0 1 1)"
+        "4.04.06: ((value-op 0 1 1) 360 0 0)"
         #:LEGAL
-        (collect-values value 360 0 0 0 1 1))
+        (collect-values (value-op 0 1 1) 360 0 0))
       (test
-        "4.04.07: (value 360 1 1 360 0 0)"
+        "4.04.07: ((value-op 360 0 0) 360 1 1)"
         #:LEGAL
-        (collect-values value 360 1 1 360 0 0))
+        (collect-values (value-op 360 0 0) 360 1 1))
       (test
-        "4.04.08: (value 118 0.5 0.25 118 0.5 0.25)"
+        "4.04.08: ((value-op 118 0.5 0.25) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values value 118 0.5 0.25 118 0.5 0.25))
+        (collect-values (value-op 118 0.5 0.25) 118 0.5 0.25))
       (test
-        "4.04.09: (value 118 0.5 0.25 99 1 1)"
+        "4.04.09: ((value-op 99 1 1) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values value 118 0.5 0.25 99 1 1))
+        (collect-values (value-op 99 1 1) 118 0.5 0.25))
       (test
-        "4.04.10: (value 118 0.5 0.25 99 0 0)"
+        "4.04.10: ((value-op 99 0 0) 118 0.5 0.25)"
         #:LEGAL
-        (collect-values value 118 0.5 0.25 99 0 0))
+        (collect-values (value-op 99 0 0) 118 0.5 0.25))
       (test
-        "4.04.11: (value 271 0.01 0.002 44 1 0.007)"
+        "4.04.11: ((value-op 44 1 0.007) 271 0.01 0.002)"
         #:LEGAL
-        (collect-values value 271 0.01 0.002 44 1 0.007))
+        (collect-values (value-op 44 1 0.007) 271 0.01 0.002))
       (test
-        "4.04.12: (value 224 0.999 0.9 31 1 1)"
+        "4.04.12: ((value-op 31 1 1) 224 0.999 0.9)"
         #:LEGAL
-        (collect-values value 224 0.999 0.9 31 1 1))
+        (collect-values (value-op 31 1 1) 224 0.999 0.9))
       (test
-        "4.04.13: (value 88 0 1 88 0.02 0.93)"
+        "4.04.13: ((value-op 88 0.02 0.93) 88 0 1)"
         #:LEGAL
-        (collect-values value 88 0 1 88 0.02 0.93))
+        (collect-values (value-op 88 0.02 0.93) 88 0 1))
       (test
-        "4.04.14: (value 88 0 1 88 1 0)"
+        "4.04.14: ((value-op 88 1 0) 88 0 1)"
         #:LEGAL
-        (collect-values value 88 0 1 88 1 0))
+        (collect-values (value-op 88 1 0) 88 0 1))
       (test
-        "4.04.15: (value 74 1 0 75 0.95 0.0001)"
+        "4.04.15: ((value-op 75 0.95 0.0001) 74 1 0)"
         #:LEGAL
-        (collect-values value 74 1 0 75 0.95 0.0001))
+        (collect-values (value-op 75 0.95 0.0001) 74 1 0))
       (test
-        "4.04.16: (value 144 1.0 0.999 299 0.65 0.07)"
+        "4.04.16: ((value-op 299 0.65 0.07) 144 1.0 0.999)"
         #:LEGAL
-        (collect-values value 144 1.0 0.999 299 0.65 0.07))
+        (collect-values (value-op 299 0.65 0.07) 144 1.0 0.999))
       (test
-        "4.04.17: (value 243 0.0007 0.4 248 0.002 1.0)"
+        "4.04.17: ((value-op 248 0.002 1.0) 243 0.0007 0.4)"
         #:LEGAL
-        (collect-values value 243 0.0007 0.4 248 0.002 1.0)))
+        (collect-values (value-op 248 0.002 1.0) 243 0.0007 0.4)))
     ))
       
 
