@@ -76,19 +76,21 @@
   (let* ((cmax (max r g b))
          (cmin (min r g b))
          (delta (- cmax cmin)))
-    (let ((h
-           (*
-             60
-             (cond
-               ((= cmax r) (modulo (/ (- g b) delta) 6))
-               ((= cmax g) (+ (/ (- b r) delta) 2))
-               (else (+ (/ (- r g) delta) 4)))))
-          (s
-            (if (= delta 0)
-              0
-              (/ delta cmax)))
-          (v cmax))
-      (values h s v))))
+    (if (= delta 0)
+      (values 0 0 cmax)
+      (let ((h
+             (*
+               60
+               (cond
+                 ((= cmax r) (modulo (/ (- g b) delta) 6))
+                 ((= cmax g) (+ (/ (- b r) delta) 2))
+                 (else (+ (/ (- r g) delta) 4)))))
+            (s
+              (if (= delta 0)
+                0
+                (/ delta cmax)))
+            (v cmax))
+        (values h s v)))))
 
 (define (parse-color spec alpha)
   (let ((s>n
