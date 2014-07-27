@@ -6,12 +6,33 @@
     (lambda () (apply f args))
     (lambda args* args*)))
 
+; (current-test-epsilon 0.001)
 (define (list= l1 l2)
   (and (= (length l1) (length l2))
        (let loop ((l1* l1) (l2* l2))
          (cond
            ((null? l1*) #t)
            ((= (car l1*) (car l2*)) (loop (cdr l1*) (cdr l2*)))
+           (else #f)))))
+
+(define (fuzzy= x y)
+  (let* ((diff (abs (- x y))))
+    (<= diff (current-test-epsilon))))
+
+(define (list-fuzzy= l1 l2)
+  (and (= (length l1) (length l2))
+       (let loop ((l1* l1) (l2* l2))
+         (cond
+           ((null? l1*) #t)
+           ((fuzzy= (car l1*) (car l2*)) (loop (cdr l1*) (cdr l2*)))
+           (else #f)))))
+
+(define (list-equal? l1 l2)
+  (and (= (length l1) (length l2))
+       (let loop ((l1* l1) (l2* l2))
+         (cond
+           ((null? l1*) #t)
+           ((equal? (car l1*) (car l2*)) (loop (cdr l1*) (cdr l2*)))
            (else #f)))))
 
 (define (list-approx= l1 l2)
@@ -94,7 +115,7 @@
 )
 
 (test-group "[2] parse-color: correct results"
-  (with-comparator list=
+  (with-comparator list-fuzzy=
     (test-group "[2.01] hex strings" 
       (test
         "2.01.01: (parse-color \"#000000\" #f) => '(0 0 0 1.0)"
