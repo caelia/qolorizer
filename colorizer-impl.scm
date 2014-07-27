@@ -202,21 +202,24 @@
 (define (dodge-op m)
   (check1 m) 
   (let ((a (- 1 m)))
-    (lambda (i) (check1 i) (/ i a))))
+    (lambda (i) (check1 i) (if (= a 0) 1 (clamp1 (/ i a))))))
 
 ;; ???
 (define (burn-op m)
   (check1 m) 
-  (let ((a (+ m 1)))
-    (lambda (i)
-      (check1 i)
-      (- 1 (- 1 i) a))))
+  (lambda (i)
+    (check1 i)
+    (if (<= m 0)
+      0
+      (- 1 (min 1 (/ (- 1 i) m))))))
 
 ;; 1. Based on test results, the formula in the GIMP manual matches
 ;;    program behavior, except values are constrained to 0 <= x <= 255.
 (define (divide-op m)
   (check1 m) 
-  (lambda (i) (check1 i) (/ i m)))
+  (lambda (i)
+    (check1 i)
+    (if (= m 0) 1 (clamp1 (/ i m)))))
 
 (define (difference-op m)
   (check1 m) 
