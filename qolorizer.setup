@@ -1,0 +1,6 @@
+(compile -O3 -s qolorizer.scm -j qolorizer)
+(compile -O3 -s qolorizer.import.scm)
+(install-extension
+  'qolorizer
+  '("qolorizer.so" "qolorizer.import.so")
+  '((version "0.1")))

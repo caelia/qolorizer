@@ -1,9 +1,9 @@
-(module colorizer
+(module qolorizer
         *            ; exporting all just for development
         ; (colorize)
         
         (import scheme chicken)
 
-        (include "colorizer-impl.scm")
+        (include "qolorizer-impl.scm")
 
 ) ; END MODULE

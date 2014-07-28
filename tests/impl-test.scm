@@ -1,5 +1,5 @@
 (use test)
-(include "../colorizer-impl.scm")
+(include "../qolorizer-impl.scm")
 
 (define (collect-values f . args)
   (call-with-values
@@ -1662,167 +1662,167 @@
       (test
         "5.01.01: (rgb>hsv 1.000 1.000 1.000)"
         '(0 0.000 1.000)
-        (collect-values (rgb>hsv 1.000 1.000 1.000)))
+        (collect-values rgb>hsv 1.000 1.000 1.000))
       (test
         "5.01.02: (rgb>hsv 0.769 0.769 0.769)"
         '(0 0.000 0.770)
-        (collect-values (rgb>hsv 0.769 0.769 0.769)))
+        (collect-values rgb>hsv 0.769 0.769 0.769))
       (test
         "5.01.03: (rgb>hsv 0.522 0.522 0.522)"
         '(0 0.000 0.520)
-        (collect-values (rgb>hsv 0.522 0.522 0.522)))
+        (collect-values rgb>hsv 0.522 0.522 0.522))
       (test
         "5.01.04: (rgb>hsv 0.251 0.251 0.251)"
         '(0 0.000 0.250)
-        (collect-values (rgb>hsv 0.251 0.251 0.251)))
+        (collect-values rgb>hsv 0.251 0.251 0.251))
       (test
         "5.01.05: (rgb>hsv 0.000 0.000 0.000)"
         '(0 0.000 0.000)
-        (collect-values (rgb>hsv 0.000 0.000 0.000)))
+        (collect-values rgb>hsv 0.000 0.000 0.000))
       (test
         "5.01.06: (rgb>hsv 1.000 0.000 0.000)"
         '(0 1.000 1.000)
-        (collect-values (rgb>hsv 1.000 0.000 0.000)))
+        (collect-values rgb>hsv 1.000 0.000 0.000))
       (test
         "5.01.07: (rgb>hsv 0.831 1.000 0.000)"
         '(70 1.000 1.000)
-        (collect-values (rgb>hsv 0.831 1.000 0.000)))
+        (collect-values rgb>hsv 0.831 1.000 0.000))
       (test
         "5.01.08: (rgb>hsv 0.000 1.000 0.416)"
         '(145 1.000 1.000)
-        (collect-values (rgb>hsv 0.000 1.000 0.416)))
+        (collect-values rgb>hsv 0.000 1.000 0.416))
       (test
         "5.01.09: (rgb>hsv 0.000 0.369 1.000)"
         '(218 1.000 1.000)
-        (collect-values (rgb>hsv 0.000 0.369 1.000)))
+        (collect-values rgb>hsv 0.000 0.369 1.000))
       (test
         "5.01.10: (rgb>hsv 0.788 0.000 1.000)"
         '(287 1.000 1.000)
-        (collect-values (rgb>hsv 0.788 0.000 1.000)))
+        (collect-values rgb>hsv 0.788 0.000 1.000))
       (test
         "5.01.11: (rgb>hsv 0.710 0.294 0.294)"
         '(0 0.590 0.710)
-        (collect-values (rgb>hsv 0.710 0.294 0.294)))
+        (collect-values rgb>hsv 0.710 0.294 0.294))
       (test
         "5.01.12: (rgb>hsv 0.733 0.859 0.145)"
         '(71 0.830 0.860)
-        (collect-values (rgb>hsv 0.733 0.859 0.145)))
+        (collect-values rgb>hsv 0.733 0.859 0.145))
       (test
         "5.01.13: (rgb>hsv 0.427 0.576 0.490)"
         '(145 0.260 0.580)
-        (collect-values (rgb>hsv 0.427 0.576 0.490)))
+        (collect-values rgb>hsv 0.427 0.576 0.490))
       (test
         "5.01.14: (rgb>hsv 0.239 0.439 0.765)"
         '(217 0.690 0.760)
-        (collect-values (rgb>hsv 0.239 0.439 0.765)))
+        (collect-values rgb>hsv 0.239 0.439 0.765))
       (test
         "5.01.15: (rgb>hsv 0.757 0.078 0.925)"
         '(288 0.920 0.930)
-        (collect-values (rgb>hsv 0.757 0.078 0.925)))
+        (collect-values rgb>hsv 0.757 0.078 0.925))
       (test
         "5.01.16: (rgb>hsv 0.557 0.000 0.000)"
         '(0 1.000 0.560)
-        (collect-values (rgb>hsv 0.557 0.000 0.000)))
+        (collect-values rgb>hsv 0.557 0.000 0.000))
       (test
         "5.01.17: (rgb>hsv 0.686 0.788 0.216)"
         '(71 0.730 0.790)
-        (collect-values (rgb>hsv 0.686 0.788 0.216)))
+        (collect-values rgb>hsv 0.686 0.788 0.216))
       (test
         "5.01.18: (rgb>hsv 0.000 1.082 0.376)"
         '(145 1.000 0.890)
-        (collect-values (rgb>hsv 0.000 1.082 0.376)))
+        (collect-values rgb>hsv 0.000 1.082 0.376))
       (test
         "5.01.19: (rgb>hsv 0.333 0.459 0.671)"
         '(218 0.500 0.670)
-        (collect-values (rgb>hsv 0.333 0.459 0.671)))
+        (collect-values rgb>hsv 0.333 0.459 0.671))
       (test
         "5.01.20: (rgb>hsv 0.745 0.098 0.906)"
         '(288 0.890 0.910)
-        (collect-values (rgb>hsv 0.745 0.098 0.906)))
+        (collect-values rgb>hsv 0.745 0.098 0.906))
 ))
 
-  (test-group "[5.02] rgb>hsv - match results"
+  (test-group "[5.02] hsv>rgb - match results"
     (with-comparator list-fuzzy=
       (test
         "5.02.01: (hsv>rgb 0 0.000 1.000)"
         '(1.000 1.000 1.000)
-        (collect-values (hsv>rgb 0 0.000 1.000)))
+        (collect-values hsv>rgb 0 0.000 1.000))
       (test
         "5.02.02: (hsv>rgb 0 0.000 0.770)"
         '(0.769 0.769 0.769)
-        (collect-values (hsv>rgb 0 0.000 0.770)))
+        (collect-values hsv>rgb 0 0.000 0.770))
       (test
         "5.02.03: (hsv>rgb 0 0.000 0.520)"
         '(0.522 0.522 0.522)
-        (collect-values (hsv>rgb 0 0.000 0.520)))
+        (collect-values hsv>rgb 0 0.000 0.520))
       (test
         "5.02.04: (hsv>rgb 0 0.000 0.250)"
         '(0.251 0.251 0.251)
-        (collect-values (hsv>rgb 0 0.000 0.250)))
+        (collect-values hsv>rgb 0 0.000 0.250))
       (test
         "5.02.05: (hsv>rgb 0 0.000 0.000)"
         '(0.000 0.000 0.000)
-        (collect-values (hsv>rgb 0 0.000 0.000)))
+        (collect-values hsv>rgb 0 0.000 0.000))
       (test
         "5.02.06: (hsv>rgb 0 1.000 1.000)"
         '(1.000 0.000 0.000)
-        (collect-values (hsv>rgb 0 1.000 1.000)))
+        (collect-values hsv>rgb 0 1.000 1.000))
       (test
         "5.02.07: (hsv>rgb 70 1.000 1.000)"
         '(0.831 1.000 0.000)
-        (collect-values (hsv>rgb 70 1.000 1.000)))
+        (collect-values hsv>rgb 70 1.000 1.000))
       (test
         "5.02.08: (hsv>rgb 145 1.000 1.000)"
         '(0.000 1.000 0.416)
-        (collect-values (hsv>rgb 145 1.000 1.000)))
+        (collect-values hsv>rgb 145 1.000 1.000))
       (test
         "5.02.09: (hsv>rgb 218 1.000 1.000)"
         '(0.000 0.369 1.000)
-        (collect-values (hsv>rgb 218 1.000 1.000)))
+        (collect-values hsv>rgb 218 1.000 1.000))
       (test
         "5.02.10: (hsv>rgb 287 1.000 1.000)"
         '(0.788 0.000 1.000)
-        (collect-values (hsv>rgb 287 1.000 1.000)))
+        (collect-values hsv>rgb 287 1.000 1.000))
       (test
         "5.02.11: (hsv>rgb 0 0.590 0.710)"
         '(0.710 0.294 0.294)
-        (collect-values (hsv>rgb 0 0.590 0.710)))
+        (collect-values hsv>rgb 0 0.590 0.710))
       (test
         "5.02.12: (hsv>rgb 71 0.830 0.860)"
         '(0.733 0.859 0.145)
-        (collect-values (hsv>rgb 71 0.830 0.860)))
+        (collect-values hsv>rgb 71 0.830 0.860))
       (test
         "5.02.13: (hsv>rgb 145 0.260 0.580)"
         '(0.427 0.576 0.490)
-        (collect-values (hsv>rgb 145 0.260 0.580)))
+        (collect-values hsv>rgb 145 0.260 0.580))
       (test
         "5.02.14: (hsv>rgb 217 0.690 0.760)"
         '(0.239 0.439 0.765)
-        (collect-values (hsv>rgb 217 0.690 0.760)))
+        (collect-values hsv>rgb 217 0.690 0.760))
       (test
         "5.02.15: (hsv>rgb 288 0.920 0.930)"
         '(0.757 0.078 0.925)
-        (collect-values (hsv>rgb 288 0.920 0.930)))
+        (collect-values hsv>rgb 288 0.920 0.930))
       (test
         "5.02.16: (hsv>rgb 0 1.000 0.560)"
         '(0.557 0.000 0.000)
-        (collect-values (hsv>rgb 0 1.000 0.560)))
+        (collect-values hsv>rgb 0 1.000 0.560))
       (test
         "5.02.17: (hsv>rgb 71 0.730 0.790)"
         '(0.686 0.788 0.216)
-        (collect-values (hsv>rgb 71 0.730 0.790)))
+        (collect-values hsv>rgb 71 0.730 0.790))
       (test
         "5.02.18: (hsv>rgb 145 1.000 0.890)"
         '(0.000 1.082 0.376)
-        (collect-values (hsv>rgb 145 1.000 0.890)))
+        (collect-values hsv>rgb 145 1.000 0.890))
       (test
         "5.02.19: (hsv>rgb 218 0.500 0.670)"
         '(0.333 0.459 0.671)
-        (collect-values (hsv>rgb 218 0.500 0.670)))
+        (collect-values hsv>rgb 218 0.500 0.670))
       (test
         "5.02.20: (hsv>rgb 288 0.890 0.910)"
         '(0.745 0.098 0.906)
-        (collect-values (hsv>rgb 288 0.890 0.910)))
+        (collect-values hsv>rgb 288 0.890 0.910))
 ))
 
   (test-group "[5.03] RGB -> HSV -> RGB roundtrip"
