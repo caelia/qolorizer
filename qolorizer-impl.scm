@@ -53,115 +53,29 @@
 ;;   http://www.rapidtables.com/convert/color/hsv-to-rgb.htm
 ;;   http://www.easyrgb.com/index.php?X=MATH&H=21#text21
 ;;   http://stackoverflow.com/questions/3018313/\
-;;     algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
-; These conversion formulas were taken from http://www.cs.rit.edu/~ncs/color/t_convert.html
-; 
-; void HSVtoRGB( float *r, float *g, float *b, float h, float s, float v )
-; {
-; 	int i;
-; 	float f, p, q, t;
-; 
-; 	if( s == 0 ) {
-; 		// achromatic (grey)
-; 		*r = *g = *b = v;
-; 		return;
-; 	}
-; 
-; 	h /= 60;			// sector 0 to 5
-; 	i = floor( h );
-; 	f = h - i;			// factorial part of h
-; 	p = v * ( 1 - s );
-; 	q = v * ( 1 - s * f );
-; 	t = v * ( 1 - s * ( 1 - f ) );
-; 
-; 	switch( i ) {
-; 		case 0:
-; 			*r = v;
-; 			*g = t;
-; 			*b = p;
-; 			break;
-; 		case 1:
-; 			*r = q;
-; 			*g = v;
-; 			*b = p;
-; 			break;
-; 		case 2:
-; 			*r = p;
-; 			*g = v;
-; 			*b = t;
-; 			break;
-; 		case 3:
-; 			*r = p;
-; 			*g = q;
-; 			*b = v;
-; 			break;
-; 		case 4:
-; 			*r = t;
-; 			*g = p;
-; 			*b = v;
-; 			break;
-; 		default:		// case 5:
-; 			*r = v;
-; 			*g = p;
-; 			*b = q;
-; 			break;
-; 	}
-; 
-; } 
+;;     algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both 
+
+;; FIXME: pretty sloppy results here!
 (define (hsv>rgb h s v)
+  (when (> h 360) (error (sprintf "Hue > 360? [~A]" h)))
+  (when (< h 0) (error (sprintf "Hue < 0? [~A]" h)))
   (if (= s 0)
     (values v v v)
-    (let* ((c (* v s))
-           (x (* c (- 1 (abs (- (modulo (/ h 60) 2) 1)))))
-           (m (- v c)))
-      (let-values (((r* g* b*)
-                    (cond
-                      ((>= h 360) (error (sprintf "Hue > 360? [~A]" h)))
-                      ((< h 0) (error (sprintf "Hue < 0? [~A]" h)))
-                      ((< h 60) (values c x 0))
-                      ((< h 120) (values x c 0))
-                      ((< h 180) (values 0 c x))
-                      ((< h 240) (values 0 x c))
-                      ((< h 300) (values x 0 c))
-                      (else (values c 0 x)))))
-        (values (+ r* m) (+ g* m) (+ b* m))))))
+    (let* ((h (if (= h 360) 0 (/ h 60)))
+           (i (x>int (floor h)))
+           (f (- h i))
+           (p (* v (- 1 s)))
+           (q (* v (- 1 (* s f))))
+           (t (* v (- 1 (* s (- 1 f))))))
+      (case i
+        ((0) (values v t p))
+        ((1) (values q v p))
+        ((2) (values p v t))
+        ((3) (values p q v))
+        ((4) (values t p v))
+        (else (values v p q))))))
 
-; // r,g,b values are from 0 to 1
-; // h = [0,360], s = [0,1], v = [0,1]
-; //		if s == 0, then h = -1 (undefined)
-; 
-; void RGBtoHSV( float r, float g, float b, float *h, float *s, float *v )
-; {
-; 	float min, max, delta;
-; 
-; 	min = MIN( r, g, b );
-; 	max = MAX( r, g, b );
-; 	*v = max;				// v
-; 
-; 	delta = max - min;
-; 
-; 	if( max != 0 )
-; 		*s = delta / max;		// s
-; 	else {
-; 		// r = g = b = 0		// s = 0, v is undefined
-; 		*s = 0;
-; 		*h = -1;
-; 		return;
-; 	}
-; 
-; 	if( r == max )
-; 		*h = ( g - b ) / delta;		// between yellow & magenta
-; 	else if( g == max )
-; 		*h = 2 + ( b - r ) / delta;	// between cyan & yellow
-; 	else
-; 		*h = 4 + ( r - g ) / delta;	// between magenta & cyan
-; 
-; 	*h *= 60;				// degrees
-; 	if( *h < 0 )
-; 		*h += 360;
-; 
-; }
-; 
+;; ??? produces integer value for H - is that right?
 (define (rgb>hsv r g b)
   (let* ((cmax (max r g b))
          (cmin (min r g b))
@@ -170,12 +84,13 @@
     (if (= delta 0)
       (values 0 0 v)
       (let ((h
-             (*
-               60
-               (cond
-                 ((= cmax r) (/ (- g b) delta))
-                 ((= cmax g) (+ (/ (- b r) delta) 2))
-                 (else (+ (/ (- r g) delta) 4)))))
+             (x>int
+               (*
+                 60
+                 (cond
+                   ((= cmax r) (/ (- g b) delta))
+                   ((= cmax g) (+ (/ (- b r) delta) 2))
+                   (else (+ (/ (- r g) delta) 4))))))
             (s (/ delta cmax)))
         (if (< h 0)
           (values (+ h 360) s v)
