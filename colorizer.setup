@@ -1,6 +1,0 @@
-(compile -O -s colorizer.scm -j colorizer)
-(compile -O -s colorizer.import.scm)
-(install-extension
-  'colorizer
-  '("colorizer.so" "colorizer.import.so")
-  '((version "0.1")))

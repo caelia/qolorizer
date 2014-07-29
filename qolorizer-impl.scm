@@ -42,53 +42,62 @@
 (define (x>int x)
   (inexact->exact (round x)))
 
+(define (x>int255 x)
+  (inexact->exact (round (* x 255))))
+
 (define (clamp1 x)
   (min (max x 0) 1))
 
 (define (clamp255 x)
   (min (max x 0) 255))
 
-;; Got these formulae from http://www.rapidtables.com/convert/color/hsv-to-rgb.htm
+;; Got these formulae from http://www.cs.rit.edu/~ncs/color/t_convert.html
 ;; I'm not positive they're correct. Alternative sources include:
-;;   http://www.cs.rit.edu/~ncs/color/t_convert.html
+;;   http://www.rapidtables.com/convert/color/hsv-to-rgb.htm
 ;;   http://www.easyrgb.com/index.php?X=MATH&H=21#text21
 ;;   http://stackoverflow.com/questions/3018313/\
-;;     algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
+;;     algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both 
+
+;; FIXME: pretty sloppy results here!
 (define (hsv>rgb h s v)
+  (when (> h 360) (error (sprintf "Hue > 360? [~A]" h)))
+  (when (< h 0) (error (sprintf "Hue < 0? [~A]" h)))
   (if (= s 0)
     (values v v v)
-    (let* ((c (* v s))
-           (x (* c (- 1 (abs (- (modulo (/ h 60) 2) 1)))))
-           (m (- v c)))
-      (let-values (((r* g* b*)
-                    (cond
-                      ((>= h 360) (error (sprintf "Hue > 360? [~A]" h)))
-                      ((< h 0) (error (sprintf "Hue < 0? [~A]" h)))
-                      ((< h 60) (values c x 0))
-                      ((< h 120) (values x c 0))
-                      ((< h 180) (values 0 c x))
-                      ((< h 240) (values 0 x c))
-                      ((< h 300) (values x 0 c))
-                      (else (values c 0 x)))))
-        (values (+ r* m) (+ g* m) (+ b* m))))))
+    (let* ((h (if (= h 360) 0 (/ h 60)))
+           (i (x>int (floor h)))
+           (f (- h i))
+           (p (* v (- 1 s)))
+           (q (* v (- 1 (* s f))))
+           (t (* v (- 1 (* s (- 1 f))))))
+      (case i
+        ((0) (values v t p))
+        ((1) (values q v p))
+        ((2) (values p v t))
+        ((3) (values p q v))
+        ((4) (values t p v))
+        (else (values v p q))))))
 
+;; ??? produces integer value for H - is that right?
 (define (rgb>hsv r g b)
   (let* ((cmax (max r g b))
          (cmin (min r g b))
-         (delta (- cmax cmin)))
-    (let ((h
-           (*
-             60
-             (cond
-               ((= cmax r) (modulo (/ (- g b) delta) 6))
-               ((= cmax g) (+ (/ (- b r) delta) 2))
-               (else (+ (/ (- r g) delta) 4)))))
-          (s
-            (if (= delta 0)
-              0
-              (/ delta cmax)))
-          (v cmax))
-      (values h s v))))
+         (delta (- cmax cmin))
+         (v cmax))
+    (if (= delta 0)
+      (values 0 0 v)
+      (let ((h
+             (x>int
+               (*
+                 60
+                 (cond
+                   ((= cmax r) (/ (- g b) delta))
+                   ((= cmax g) (+ (/ (- b r) delta) 2))
+                   (else (+ (/ (- r g) delta) 4))))))
+            (s (/ delta cmax)))
+        (if (< h 0)
+          (values (+ h 360) s v)
+          (values h s v))))))
 
 (define (parse-color spec alpha)
   (let ((s>n
@@ -296,7 +305,7 @@
            (else (error (sprintf "Unsupported compositing method: '~A'" method))))))
     (lambda (ri gi bi ai rm gm bm)
       (let-values (((r g b a) (op ri gi bi ai rm gm bm am)))
-        (color/rgba (x>int r) (x>int g) (x>int b) (x>int (* a 255)))))))
+        (color/rgba (x>int255 r) (x>int255 g) (x>int255 b) (x>int255 a))))))
 
 (define (mk-blend-op color-spec #!key (blend-mode 'normal) (alpha #f))
   (let-values (((rm gm bm am) (parse-color color-spec alpha)))
@@ -316,10 +325,8 @@
              (and (not mk-rgb-op)
                   (or (alist-ref
                         blend-mode
-                        `((color . ,color-op)
-                          (hue . ,hue-op)
-                          (saturation . ,saturation-op)
-                          (value . ,value-op)))
+                        `((color . ,color-op) (hue . ,hue-op)
+                          (saturation . ,saturation-op) (value . ,value-op)))
                       (error (sprintf "Invalid blend mode: '~A'" blend-mode)))))
            (composite
              (composite-op am))
@@ -328,17 +335,16 @@
                (let ((rop (mk-rgb-op rm))
                      (gop (mk-rgb-op gm))
                      (bop (mk-rgb-op bm)))
-                 (lambda (ri gi bi) (values (rop ri) (gop gi) (bop bi)))
-               (mk-hsv-op
-                 (let-values (((hm sm vm) (rgb>hsv rm gm bm)))
-                   (let ((base-op (mk-hsv-op hm sm vm)))
-                     (lambda (ri gi bi)
-                       (let-values (((hi si vi) (rgb>hsv ri gi bi)))
-                         (let-values (((h s v) (base-op hi si vi)))
-                           (hsv>rgb h s v)))))))))))
+                 (lambda (ri gi bi) (values (rop ri) (gop gi) (bop bi))))
+               (let-values (((hm sm vm) (rgb>hsv rm gm bm)))
+                 (let ((base-op (mk-hsv-op hm sm vm)))
+                   (lambda (ri gi bi)
+                     (let-values (((hi si vi) (rgb>hsv ri gi bi)))
+                       (let-values (((h s v) (base-op hi si vi)))
+                         (hsv>rgb h s v)))))))))
       (lambda (ri gi bi ai)
         (let-values (((rb gb bb) (blend ri gi bi)))
-          (composite ri gi bi ai rb gb bb am))))))
+          (composite ri gi bi ai rb gb bb))))))
                     
 
 (define (colorize src-img pixel-op)
