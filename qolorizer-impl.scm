@@ -42,6 +42,9 @@
 (define (x>int x)
   (inexact->exact (round x)))
 
+(define (x>int255 x)
+  (inexact->exact (round (* x 255))))
+
 (define (clamp1 x)
   (min (max x 0) 1))
 
@@ -302,7 +305,7 @@
            (else (error (sprintf "Unsupported compositing method: '~A'" method))))))
     (lambda (ri gi bi ai rm gm bm)
       (let-values (((r g b a) (op ri gi bi ai rm gm bm am)))
-        (color/rgba (x>int r) (x>int g) (x>int b) (x>int (* a 255)))))))
+        (color/rgba (x>int255 r) (x>int255 g) (x>int255 b) (x>int255 a))))))
 
 (define (mk-blend-op color-spec #!key (blend-mode 'normal) (alpha #f))
   (let-values (((rm gm bm am) (parse-color color-spec alpha)))
@@ -322,10 +325,8 @@
              (and (not mk-rgb-op)
                   (or (alist-ref
                         blend-mode
-                        `((color . ,color-op)
-                          (hue . ,hue-op)
-                          (saturation . ,saturation-op)
-                          (value . ,value-op)))
+                        `((color . ,color-op) (hue . ,hue-op)
+                          (saturation . ,saturation-op) (value . ,value-op)))
                       (error (sprintf "Invalid blend mode: '~A'" blend-mode)))))
            (composite
              (composite-op am))
@@ -334,17 +335,16 @@
                (let ((rop (mk-rgb-op rm))
                      (gop (mk-rgb-op gm))
                      (bop (mk-rgb-op bm)))
-                 (lambda (ri gi bi) (values (rop ri) (gop gi) (bop bi)))
-               (mk-hsv-op
-                 (let-values (((hm sm vm) (rgb>hsv rm gm bm)))
-                   (let ((base-op (mk-hsv-op hm sm vm)))
-                     (lambda (ri gi bi)
-                       (let-values (((hi si vi) (rgb>hsv ri gi bi)))
-                         (let-values (((h s v) (base-op hi si vi)))
-                           (hsv>rgb h s v)))))))))))
+                 (lambda (ri gi bi) (values (rop ri) (gop gi) (bop bi))))
+               (let-values (((hm sm vm) (rgb>hsv rm gm bm)))
+                 (let ((base-op (mk-hsv-op hm sm vm)))
+                   (lambda (ri gi bi)
+                     (let-values (((hi si vi) (rgb>hsv ri gi bi)))
+                       (let-values (((h s v) (base-op hi si vi)))
+                         (hsv>rgb h s v)))))))))
       (lambda (ri gi bi ai)
         (let-values (((rb gb bb) (blend ri gi bi)))
-          (composite ri gi bi ai rb gb bb am))))))
+          (composite ri gi bi ai rb gb bb))))))
                     
 
 (define (colorize src-img pixel-op)
