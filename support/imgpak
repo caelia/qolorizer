@@ -1,0 +1,18 @@
+#!/bin/sh
+
+top=$1
+out=$1.b64
+
+for dir in $top/*; do
+    blend=`basename $dir`
+    for sub in $dir/*; do
+        color=`basename $sub`
+        for subsub in $sub/*; do
+            alpha=`basename $subsub`
+            echo "% $blend-$color-$alpha" >>$out
+            base64 "$subsub/colors.png" >>$out
+        done
+    done
+done
+
+gzip $out
