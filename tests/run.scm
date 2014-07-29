@@ -127,7 +127,7 @@
     (change-directory start))
   (create-test-images))
 
-; (setup)
+(setup)
 
 (test-group "[1] addition"
   (test-group "[1.01] addition/000000"

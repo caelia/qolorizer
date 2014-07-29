@@ -1,6 +1,5 @@
 (module qolorizer
-        *            ; exporting all just for development
-        ; (colorize)
+        (colorize mk-blend-op)
         
         (import scheme chicken)
 
