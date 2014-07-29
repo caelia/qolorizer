@@ -43,7 +43,7 @@
   (inexact->exact (round x)))
 
 (define (x>int255 x)
-  (inexact->exact (round (* x 255))))
+  (clamp255 (inexact->exact (round (* x 255)))))
 
 (define (clamp1 x)
   (min (max x 0) 1))
@@ -305,7 +305,8 @@
            (else (error (sprintf "Unsupported compositing method: '~A'" method))))))
     (lambda (ri gi bi ai rm gm bm)
       (let-values (((r g b a) (op ri gi bi ai rm gm bm am)))
-        (color/rgba (x>int255 r) (x>int255 g) (x>int255 b) (x>int255 a))))))
+        (color/rgba (x>int255 (/ r a)) (x>int255 (/ g a))
+                    (x>int255 (/ b a)) (x>int255 a))))))
 
 (define (mk-blend-op color-spec #!key (blend-mode 'normal) (alpha #f))
   (let-values (((rm gm bm am) (parse-color color-spec alpha)))
@@ -343,7 +344,7 @@
                        (let-values (((h s v) (base-op hi si vi)))
                          (hsv>rgb h s v)))))))))
       (lambda (ri gi bi ai)
-        (let-values (((rb gb bb) (blend ri gi bi)))
+        (let-values (((rb gb bb) (blend (* ri ai) (* gi ai) (* bi ai))))
           (composite ri gi bi ai rb gb bb))))))
                     
 
