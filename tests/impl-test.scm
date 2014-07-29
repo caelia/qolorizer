@@ -6,6 +6,11 @@
     (lambda () (apply f args))
     (lambda args* args*)))
 
+(define (collect-values* thunk)
+  (call-with-values
+    thunk
+    (lambda args args)))
+
 ; (current-test-epsilon 0.001)
 (define (list= l1 l2)
   (and (= (length l1) (length l2))
@@ -1657,380 +1662,508 @@
     ))
 
 (test-group "[5] RGB <-> HSV conversions"
+
   (test-group "[5.01] rgb>hsv - match results"
     (with-comparator list-fuzzy=
+
       (test
         "5.01.01: (rgb>hsv 1.000 1.000 1.000)"
         '(0 0.000 1.000)
         (collect-values rgb>hsv 1.000 1.000 1.000))
+
       (test
-        "5.01.02: (rgb>hsv 0.769 0.769 0.769)"
-        '(0 0.000 0.770)
-        (collect-values rgb>hsv 0.769 0.769 0.769))
-      (test
-        "5.01.03: (rgb>hsv 0.522 0.522 0.522)"
-        '(0 0.000 0.520)
-        (collect-values rgb>hsv 0.522 0.522 0.522))
-      (test
-        "5.01.04: (rgb>hsv 0.251 0.251 0.251)"
-        '(0 0.000 0.250)
-        (collect-values rgb>hsv 0.251 0.251 0.251))
-      (test
-        "5.01.05: (rgb>hsv 0.000 0.000 0.000)"
-        '(0 0.000 0.000)
-        (collect-values rgb>hsv 0.000 0.000 0.000))
-      (test
-        "5.01.06: (rgb>hsv 1.000 0.000 0.000)"
+        "5.01.02: (rgb>hsv 1.000 0.000 0.000)"
         '(0 1.000 1.000)
         (collect-values rgb>hsv 1.000 0.000 0.000))
+
       (test
-        "5.01.07: (rgb>hsv 0.831 1.000 0.000)"
+        "5.01.03: (rgb>hsv 0.710 0.294 0.294)"
+        '(0 0.586 0.710)
+        (collect-values rgb>hsv 0.710 0.294 0.294))
+
+      (test
+        "5.01.04: (rgb>hsv 0.557 0.000 0.000)"
+        '(0 1.000 0.557)
+        (collect-values rgb>hsv 0.557 0.000 0.000))
+
+      (test
+        "5.01.05: (rgb>hsv 0.769 0.769 0.769)"
+        '(0 0.000 0.769)
+        (collect-values rgb>hsv 0.769 0.769 0.769))
+
+      (test
+        "5.01.06: (rgb>hsv 0.831 1.000 0.000)"
         '(70 1.000 1.000)
         (collect-values rgb>hsv 0.831 1.000 0.000))
+
       (test
-        "5.01.08: (rgb>hsv 0.000 1.000 0.416)"
+        "5.01.07: (rgb>hsv 0.733 0.859 0.145)"
+        '(71 0.831 0.859)
+        (collect-values rgb>hsv 0.733 0.859 0.145))
+
+      (test
+        "5.01.08: (rgb>hsv 0.686 0.788 0.216)"
+        '(71 0.726 0.788)
+        (collect-values rgb>hsv 0.686 0.788 0.216))
+
+      (test
+        "5.01.09: (rgb>hsv 0.522 0.522 0.522)"
+        '(0 0.000 0.522)
+        (collect-values rgb>hsv 0.522 0.522 0.522))
+
+      (test
+        "5.01.10: (rgb>hsv 0.000 1.000 0.416)"
         '(145 1.000 1.000)
         (collect-values rgb>hsv 0.000 1.000 0.416))
+
       (test
-        "5.01.09: (rgb>hsv 0.000 0.369 1.000)"
+        "5.01.11: (rgb>hsv 0.427 0.576 0.490)"
+        '(145 0.259 0.576)
+        (collect-values rgb>hsv 0.427 0.576 0.490))
+
+      (test
+        "5.01.12: (rgb>hsv 0.000 0.886 0.376)"
+        '(145 1.000 0.886)
+        (collect-values rgb>hsv 0.000 0.886 0.376))
+
+      (test
+        "5.01.13: (rgb>hsv 0.251 0.251 0.251)"
+        '(0 0.000 0.251)
+        (collect-values rgb>hsv 0.251 0.251 0.251))
+
+      (test
+        "5.01.14: (rgb>hsv 0.000 0.369 1.000)"
         '(218 1.000 1.000)
         (collect-values rgb>hsv 0.000 0.369 1.000))
+
       (test
-        "5.01.10: (rgb>hsv 0.788 0.000 1.000)"
+        "5.01.15: (rgb>hsv 0.239 0.439 0.765)"
+        '(217 0.687 0.765)
+        (collect-values rgb>hsv 0.239 0.439 0.765))
+
+      (test
+        "5.01.16: (rgb>hsv 0.333 0.459 0.671)"
+        '(218 0.503 0.671)
+        (collect-values rgb>hsv 0.333 0.459 0.671))
+
+      (test
+        "5.01.17: (rgb>hsv 0.000 0.000 0.000)"
+        '(0 0.000 0.000)
+        (collect-values rgb>hsv 0.000 0.000 0.000))
+
+      (test
+        "5.01.18: (rgb>hsv 0.788 0.000 1.000)"
         '(287 1.000 1.000)
         (collect-values rgb>hsv 0.788 0.000 1.000))
+
       (test
-        "5.01.11: (rgb>hsv 0.710 0.294 0.294)"
-        '(0 0.590 0.710)
-        (collect-values rgb>hsv 0.710 0.294 0.294))
-      (test
-        "5.01.12: (rgb>hsv 0.733 0.859 0.145)"
-        '(71 0.830 0.860)
-        (collect-values rgb>hsv 0.733 0.859 0.145))
-      (test
-        "5.01.13: (rgb>hsv 0.427 0.576 0.490)"
-        '(145 0.260 0.580)
-        (collect-values rgb>hsv 0.427 0.576 0.490))
-      (test
-        "5.01.14: (rgb>hsv 0.239 0.439 0.765)"
-        '(217 0.690 0.760)
-        (collect-values rgb>hsv 0.239 0.439 0.765))
-      (test
-        "5.01.15: (rgb>hsv 0.757 0.078 0.925)"
-        '(288 0.920 0.930)
+        "5.01.19: (rgb>hsv 0.757 0.078 0.925)"
+        '(288 0.915 0.925)
         (collect-values rgb>hsv 0.757 0.078 0.925))
-      (test
-        "5.01.16: (rgb>hsv 0.557 0.000 0.000)"
-        '(0 1.000 0.560)
-        (collect-values rgb>hsv 0.557 0.000 0.000))
-      (test
-        "5.01.17: (rgb>hsv 0.686 0.788 0.216)"
-        '(71 0.730 0.790)
-        (collect-values rgb>hsv 0.686 0.788 0.216))
-      (test
-        "5.01.18: (rgb>hsv 0.000 1.082 0.376)"
-        '(145 1.000 0.890)
-        (collect-values rgb>hsv 0.000 1.082 0.376))
-      (test
-        "5.01.19: (rgb>hsv 0.333 0.459 0.671)"
-        '(218 0.500 0.670)
-        (collect-values rgb>hsv 0.333 0.459 0.671))
+
       (test
         "5.01.20: (rgb>hsv 0.745 0.098 0.906)"
-        '(288 0.890 0.910)
+        '(288 0.892 0.906)
         (collect-values rgb>hsv 0.745 0.098 0.906))
+
 ))
 
   (test-group "[5.02] hsv>rgb - match results"
     (with-comparator list-fuzzy=
+
       (test
         "5.02.01: (hsv>rgb 0 0.000 1.000)"
         '(1.000 1.000 1.000)
         (collect-values hsv>rgb 0 0.000 1.000))
+
       (test
-        "5.02.02: (hsv>rgb 0 0.000 0.770)"
-        '(0.769 0.769 0.769)
-        (collect-values hsv>rgb 0 0.000 0.770))
-      (test
-        "5.02.03: (hsv>rgb 0 0.000 0.520)"
-        '(0.522 0.522 0.522)
-        (collect-values hsv>rgb 0 0.000 0.520))
-      (test
-        "5.02.04: (hsv>rgb 0 0.000 0.250)"
-        '(0.251 0.251 0.251)
-        (collect-values hsv>rgb 0 0.000 0.250))
-      (test
-        "5.02.05: (hsv>rgb 0 0.000 0.000)"
-        '(0.000 0.000 0.000)
-        (collect-values hsv>rgb 0 0.000 0.000))
-      (test
-        "5.02.06: (hsv>rgb 0 1.000 1.000)"
+        "5.02.02: (hsv>rgb 0 1.000 1.000)"
         '(1.000 0.000 0.000)
         (collect-values hsv>rgb 0 1.000 1.000))
+
       (test
-        "5.02.07: (hsv>rgb 70 1.000 1.000)"
+        "5.02.03: (hsv>rgb 0 0.586 0.710)"
+        '(0.710 0.294 0.294)
+        (collect-values hsv>rgb 0 0.586 0.710))
+
+      (test
+        "5.02.04: (hsv>rgb 0 1.000 0.557)"
+        '(0.557 0.000 0.000)
+        (collect-values hsv>rgb 0 1.000 0.557))
+
+      (test
+        "5.02.05: (hsv>rgb 0 0.000 0.769)"
+        '(0.769 0.769 0.769)
+        (collect-values hsv>rgb 0 0.000 0.769))
+
+      (test
+        "5.02.06: (hsv>rgb 70 1.000 1.000)"
         '(0.831 1.000 0.000)
         (collect-values hsv>rgb 70 1.000 1.000))
+
       (test
-        "5.02.08: (hsv>rgb 145 1.000 1.000)"
+        "5.02.07: (hsv>rgb 71 0.831 0.859)"
+        '(0.733 0.859 0.145)
+        (collect-values hsv>rgb 71 0.831 0.859))
+
+      (test
+        "5.02.08: (hsv>rgb 71 0.726 0.788)"
+        '(0.686 0.788 0.216)
+        (collect-values hsv>rgb 71 0.726 0.788))
+
+      (test
+        "5.02.09: (hsv>rgb 0 0.000 0.522)"
+        '(0.522 0.522 0.522)
+        (collect-values hsv>rgb 0 0.000 0.522))
+
+      (test
+        "5.02.10: (hsv>rgb 145 1.000 1.000)"
         '(0.000 1.000 0.416)
         (collect-values hsv>rgb 145 1.000 1.000))
+
       (test
-        "5.02.09: (hsv>rgb 218 1.000 1.000)"
+        "5.02.11: (hsv>rgb 145 0.259 0.576)"
+        '(0.427 0.576 0.490)
+        (collect-values hsv>rgb 145 0.259 0.576))
+
+      (test
+        "5.02.12: (hsv>rgb 145 1.000 0.886)"
+        '(0.000 0.886 0.376)
+        (collect-values hsv>rgb 145 1.000 0.886))
+
+      (test
+        "5.02.13: (hsv>rgb 0 0.000 0.251)"
+        '(0.251 0.251 0.251)
+        (collect-values hsv>rgb 0 0.000 0.251))
+
+      (test
+        "5.02.14: (hsv>rgb 218 1.000 1.000)"
         '(0.000 0.369 1.000)
         (collect-values hsv>rgb 218 1.000 1.000))
+
       (test
-        "5.02.10: (hsv>rgb 287 1.000 1.000)"
+        "5.02.15: (hsv>rgb 217 0.687 0.765)"
+        '(0.239 0.439 0.765)
+        (collect-values hsv>rgb 217 0.687 0.765))
+
+      (test
+        "5.02.16: (hsv>rgb 218 0.503 0.671)"
+        '(0.333 0.459 0.671)
+        (collect-values hsv>rgb 218 0.503 0.671))
+
+      (test
+        "5.02.17: (hsv>rgb 0 0.000 0.000)"
+        '(0.000 0.000 0.000)
+        (collect-values hsv>rgb 0 0.000 0.000))
+
+      (test
+        "5.02.18: (hsv>rgb 287 1.000 1.000)"
         '(0.788 0.000 1.000)
         (collect-values hsv>rgb 287 1.000 1.000))
+
       (test
-        "5.02.11: (hsv>rgb 0 0.590 0.710)"
-        '(0.710 0.294 0.294)
-        (collect-values hsv>rgb 0 0.590 0.710))
-      (test
-        "5.02.12: (hsv>rgb 71 0.830 0.860)"
-        '(0.733 0.859 0.145)
-        (collect-values hsv>rgb 71 0.830 0.860))
-      (test
-        "5.02.13: (hsv>rgb 145 0.260 0.580)"
-        '(0.427 0.576 0.490)
-        (collect-values hsv>rgb 145 0.260 0.580))
-      (test
-        "5.02.14: (hsv>rgb 217 0.690 0.760)"
-        '(0.239 0.439 0.765)
-        (collect-values hsv>rgb 217 0.690 0.760))
-      (test
-        "5.02.15: (hsv>rgb 288 0.920 0.930)"
+        "5.02.19: (hsv>rgb 288 0.915 0.925)"
         '(0.757 0.078 0.925)
-        (collect-values hsv>rgb 288 0.920 0.930))
+        (collect-values hsv>rgb 288 0.915 0.925))
+
       (test
-        "5.02.16: (hsv>rgb 0 1.000 0.560)"
-        '(0.557 0.000 0.000)
-        (collect-values hsv>rgb 0 1.000 0.560))
-      (test
-        "5.02.17: (hsv>rgb 71 0.730 0.790)"
-        '(0.686 0.788 0.216)
-        (collect-values hsv>rgb 71 0.730 0.790))
-      (test
-        "5.02.18: (hsv>rgb 145 1.000 0.890)"
-        '(0.000 1.082 0.376)
-        (collect-values hsv>rgb 145 1.000 0.890))
-      (test
-        "5.02.19: (hsv>rgb 218 0.500 0.670)"
-        '(0.333 0.459 0.671)
-        (collect-values hsv>rgb 218 0.500 0.670))
-      (test
-        "5.02.20: (hsv>rgb 288 0.890 0.910)"
+        "5.02.20: (hsv>rgb 288 0.892 0.906)"
         '(0.745 0.098 0.906)
-        (collect-values hsv>rgb 288 0.890 0.910))
+        (collect-values hsv>rgb 288 0.892 0.906))
+
 ))
 
   (test-group "[5.03] RGB -> HSV -> RGB roundtrip"
     (with-comparator list-fuzzy=
+
       (test
         "5.03.01: (hsv>rgb (rgb>hsv 1.000 1.000 1.000))"
         '(1.000 1.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 1.000 1.000 1.000)) hsv>rgb)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 1.000 1.000 1.000)) hsv>rgb))))
+
       (test
-        "5.03.02: (hsv>rgb (rgb>hsv 0.769 0.769 0.769))"
-        '(0.769 0.769 0.769)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.769 0.769 0.769)) hsv>rgb)))
-      (test
-        "5.03.03: (hsv>rgb (rgb>hsv 0.522 0.522 0.522))"
-        '(0.522 0.522 0.522)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.522 0.522 0.522)) hsv>rgb)))
-      (test
-        "5.03.04: (hsv>rgb (rgb>hsv 0.251 0.251 0.251))"
-        '(0.251 0.251 0.251)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.251 0.251 0.251)) hsv>rgb)))
-      (test
-        "5.03.05: (hsv>rgb (rgb>hsv 0.000 0.000 0.000))"
-        '(0.000 0.000 0.000)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.000 0.000 0.000)) hsv>rgb)))
-      (test
-        "5.03.06: (hsv>rgb (rgb>hsv 1.000 0.000 0.000))"
+        "5.03.02: (hsv>rgb (rgb>hsv 1.000 0.000 0.000))"
         '(1.000 0.000 0.000)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 1.000 0.000 0.000)) hsv>rgb)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 1.000 0.000 0.000)) hsv>rgb))))
+
       (test
-        "5.03.07: (hsv>rgb (rgb>hsv 0.831 1.000 0.000))"
-        '(0.831 1.000 0.000)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.831 1.000 0.000)) hsv>rgb)))
-      (test
-        "5.03.08: (hsv>rgb (rgb>hsv 0.000 1.000 0.416))"
-        '(0.000 1.000 0.416)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.000 1.000 0.416)) hsv>rgb)))
-      (test
-        "5.03.09: (hsv>rgb (rgb>hsv 0.000 0.369 1.000))"
-        '(0.000 0.369 1.000)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.000 0.369 1.000)) hsv>rgb)))
-      (test
-        "5.03.10: (hsv>rgb (rgb>hsv 0.788 0.000 1.000))"
-        '(0.788 0.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.788 0.000 1.000)) hsv>rgb)))
-      (test
-        "5.03.11: (hsv>rgb (rgb>hsv 0.710 0.294 0.294))"
+        "5.03.03: (hsv>rgb (rgb>hsv 0.710 0.294 0.294))"
         '(0.710 0.294 0.294)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.710 0.294 0.294)) hsv>rgb)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.710 0.294 0.294)) hsv>rgb))))
+
       (test
-        "5.03.12: (hsv>rgb (rgb>hsv 0.733 0.859 0.145))"
-        '(0.733 0.859 0.145)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.733 0.859 0.145)) hsv>rgb)))
-      (test
-        "5.03.13: (hsv>rgb (rgb>hsv 0.427 0.576 0.490))"
-        '(0.427 0.576 0.490)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.427 0.576 0.490)) hsv>rgb)))
-      (test
-        "5.03.14: (hsv>rgb (rgb>hsv 0.239 0.439 0.765))"
-        '(0.239 0.439 0.765)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.239 0.439 0.765)) hsv>rgb)))
-      (test
-        "5.03.15: (hsv>rgb (rgb>hsv 0.757 0.078 0.925))"
-        '(0.757 0.078 0.925)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.757 0.078 0.925)) hsv>rgb)))
-      (test
-        "5.03.16: (hsv>rgb (rgb>hsv 0.557 0.000 0.000))"
+        "5.03.04: (hsv>rgb (rgb>hsv 0.557 0.000 0.000))"
         '(0.557 0.000 0.000)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.557 0.000 0.000)) hsv>rgb)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.557 0.000 0.000)) hsv>rgb))))
+
       (test
-        "5.03.17: (hsv>rgb (rgb>hsv 0.686 0.788 0.216))"
+        "5.03.05: (hsv>rgb (rgb>hsv 0.769 0.769 0.769))"
+        '(0.769 0.769 0.769)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.769 0.769 0.769)) hsv>rgb))))
+
+      (test
+        "5.03.06: (hsv>rgb (rgb>hsv 0.831 1.000 0.000))"
+        '(0.831 1.000 0.000)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.831 1.000 0.000)) hsv>rgb))))
+
+      (test
+        "5.03.07: (hsv>rgb (rgb>hsv 0.733 0.859 0.145))"
+        '(0.733 0.859 0.145)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.733 0.859 0.145)) hsv>rgb))))
+
+      (test
+        "5.03.08: (hsv>rgb (rgb>hsv 0.686 0.788 0.216))"
         '(0.686 0.788 0.216)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.686 0.788 0.216)) hsv>rgb)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.686 0.788 0.216)) hsv>rgb))))
+
       (test
-        "5.03.18: (hsv>rgb (rgb>hsv 0.000 1.082 0.376))"
-        '(0.000 1.082 0.376)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.000 1.082 0.376)) hsv>rgb)))
+        "5.03.09: (hsv>rgb (rgb>hsv 0.522 0.522 0.522))"
+        '(0.522 0.522 0.522)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.522 0.522 0.522)) hsv>rgb))))
+
       (test
-        "5.03.19: (hsv>rgb (rgb>hsv 0.333 0.459 0.671))"
+        "5.03.10: (hsv>rgb (rgb>hsv 0.000 1.000 0.416))"
+        '(0.000 1.000 0.416)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.000 1.000 0.416)) hsv>rgb))))
+
+      (test
+        "5.03.11: (hsv>rgb (rgb>hsv 0.427 0.576 0.490))"
+        '(0.427 0.576 0.490)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.427 0.576 0.490)) hsv>rgb))))
+
+      (test
+        "5.03.12: (hsv>rgb (rgb>hsv 0.000 0.886 0.376))"
+        '(0.000 0.886 0.376)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.000 0.886 0.376)) hsv>rgb))))
+
+      (test
+        "5.03.13: (hsv>rgb (rgb>hsv 0.251 0.251 0.251))"
+        '(0.251 0.251 0.251)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.251 0.251 0.251)) hsv>rgb))))
+
+      (test
+        "5.03.14: (hsv>rgb (rgb>hsv 0.000 0.369 1.000))"
+        '(0.000 0.369 1.000)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.000 0.369 1.000)) hsv>rgb))))
+
+      (test
+        "5.03.15: (hsv>rgb (rgb>hsv 0.239 0.439 0.765))"
+        '(0.239 0.439 0.765)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.239 0.439 0.765)) hsv>rgb))))
+
+      (test
+        "5.03.16: (hsv>rgb (rgb>hsv 0.333 0.459 0.671))"
         '(0.333 0.459 0.671)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.333 0.459 0.671)) hsv>rgb)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.333 0.459 0.671)) hsv>rgb))))
+
+      (test
+        "5.03.17: (hsv>rgb (rgb>hsv 0.000 0.000 0.000))"
+        '(0.000 0.000 0.000)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.000 0.000 0.000)) hsv>rgb))))
+
+      (test
+        "5.03.18: (hsv>rgb (rgb>hsv 0.788 0.000 1.000))"
+        '(0.788 0.000 1.000)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.788 0.000 1.000)) hsv>rgb))))
+
+      (test
+        "5.03.19: (hsv>rgb (rgb>hsv 0.757 0.078 0.925))"
+        '(0.757 0.078 0.925)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.757 0.078 0.925)) hsv>rgb))))
+
       (test
         "5.03.20: (hsv>rgb (rgb>hsv 0.745 0.098 0.906))"
         '(0.745 0.098 0.906)
-        (collect-values
-          (call-with-values (lambda () (rgb>hsv 0.745 0.098 0.906)) hsv>rgb)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (rgb>hsv 0.745 0.098 0.906)) hsv>rgb))))
+
 ))
 
   (test-group "[5.04] HSV -> RGB -> HSV roundtrip"
     (with-comparator list-fuzzy=
-      (test
+
+     (test
         "5.04.01: (rgb>hsv (hsv>rgb 0 0.000 1.000))"
         '(0 0.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 0.000 1.000)) rgb>hsv)))
-      (test
-        "5.04.02: (rgb>hsv (hsv>rgb 0 0.000 0.770))"
-        '(0 0.000 0.770)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 0.000 0.770)) rgb>hsv)))
-      (test
-        "5.04.03: (rgb>hsv (hsv>rgb 0 0.000 0.520))"
-        '(0 0.000 0.520)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 0.000 0.520)) rgb>hsv)))
-      (test
-        "5.04.04: (rgb>hsv (hsv>rgb 0 0.000 0.250))"
-        '(0 0.000 0.250)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 0.000 0.250)) rgb>hsv)))
-      (test
-        "5.04.05: (rgb>hsv (hsv>rgb 0 0.000 0.000))"
-        '(0 0.000 0.000)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 0.000 0.000)) rgb>hsv)))
-      (test
-        "5.04.06: (rgb>hsv (hsv>rgb 0 1.000 1.000))"
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 0.000 1.000)) rgb>hsv))))
+
+     (test
+        "5.04.02: (rgb>hsv (hsv>rgb 0 1.000 1.000))"
         '(0 1.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 1.000 1.000)) rgb>hsv)))
-      (test
-        "5.04.07: (rgb>hsv (hsv>rgb 70 1.000 1.000))"
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 1.000 1.000)) rgb>hsv))))
+
+     (test
+        "5.04.03: (rgb>hsv (hsv>rgb 0 0.586 0.710))"
+        '(0 0.586 0.710)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 0.586 0.710)) rgb>hsv))))
+
+     (test
+        "5.04.04: (rgb>hsv (hsv>rgb 0 1.000 0.557))"
+        '(0 1.000 0.557)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 1.000 0.557)) rgb>hsv))))
+
+     (test
+        "5.04.05: (rgb>hsv (hsv>rgb 0 0.000 0.769))"
+        '(0 0.000 0.769)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 0.000 0.769)) rgb>hsv))))
+
+     (test
+        "5.04.06: (rgb>hsv (hsv>rgb 70 1.000 1.000))"
         '(70 1.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 70 1.000 1.000)) rgb>hsv)))
-      (test
-        "5.04.08: (rgb>hsv (hsv>rgb 145 1.000 1.000))"
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 70 1.000 1.000)) rgb>hsv))))
+
+     (test
+        "5.04.07: (rgb>hsv (hsv>rgb 71 0.831 0.859))"
+        '(71 0.831 0.859)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 71 0.831 0.859)) rgb>hsv))))
+
+     (test
+        "5.04.08: (rgb>hsv (hsv>rgb 71 0.726 0.788))"
+        '(71 0.726 0.788)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 71 0.726 0.788)) rgb>hsv))))
+
+     (test
+        "5.04.09: (rgb>hsv (hsv>rgb 0 0.000 0.522))"
+        '(0 0.000 0.522)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 0.000 0.522)) rgb>hsv))))
+
+     (test
+        "5.04.10: (rgb>hsv (hsv>rgb 145 1.000 1.000))"
         '(145 1.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 145 1.000 1.000)) rgb>hsv)))
-      (test
-        "5.04.09: (rgb>hsv (hsv>rgb 218 1.000 1.000))"
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 145 1.000 1.000)) rgb>hsv))))
+
+     (test
+        "5.04.11: (rgb>hsv (hsv>rgb 145 0.259 0.576))"
+        '(145 0.259 0.576)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 145 0.259 0.576)) rgb>hsv))))
+
+     (test
+        "5.04.12: (rgb>hsv (hsv>rgb 145 1.000 0.886))"
+        '(145 1.000 0.886)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 145 1.000 0.886)) rgb>hsv))))
+
+     (test
+        "5.04.13: (rgb>hsv (hsv>rgb 0 0.000 0.251))"
+        '(0 0.000 0.251)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 0.000 0.251)) rgb>hsv))))
+
+     (test
+        "5.04.14: (rgb>hsv (hsv>rgb 218 1.000 1.000))"
         '(218 1.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 218 1.000 1.000)) rgb>hsv)))
-      (test
-        "5.04.10: (rgb>hsv (hsv>rgb 287 1.000 1.000))"
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 218 1.000 1.000)) rgb>hsv))))
+
+     (test
+        "5.04.15: (rgb>hsv (hsv>rgb 217 0.687 0.765))"
+        '(217 0.687 0.765)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 217 0.687 0.765)) rgb>hsv))))
+
+     (test
+        "5.04.16: (rgb>hsv (hsv>rgb 218 0.503 0.671))"
+        '(218 0.503 0.671)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 218 0.503 0.671)) rgb>hsv))))
+
+     (test
+        "5.04.17: (rgb>hsv (hsv>rgb 0 0.000 0.000))"
+        '(0 0.000 0.000)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 0 0.000 0.000)) rgb>hsv))))
+
+     (test
+        "5.04.18: (rgb>hsv (hsv>rgb 287 1.000 1.000))"
         '(287 1.000 1.000)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 287 1.000 1.000)) rgb>hsv)))
-      (test
-        "5.04.11: (rgb>hsv (hsv>rgb 0 0.590 0.710))"
-        '(0 0.590 0.710)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 0.590 0.710)) rgb>hsv)))
-      (test
-        "5.04.12: (rgb>hsv (hsv>rgb 71 0.830 0.860))"
-        '(71 0.830 0.860)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 71 0.830 0.860)) rgb>hsv)))
-      (test
-        "5.04.13: (rgb>hsv (hsv>rgb 145 0.260 0.580))"
-        '(145 0.260 0.580)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 145 0.260 0.580)) rgb>hsv)))
-      (test
-        "5.04.14: (rgb>hsv (hsv>rgb 217 0.690 0.760))"
-        '(217 0.690 0.760)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 217 0.690 0.760)) rgb>hsv)))
-      (test
-        "5.04.15: (rgb>hsv (hsv>rgb 288 0.920 0.930))"
-        '(288 0.920 0.930)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 288 0.920 0.930)) rgb>hsv)))
-      (test
-        "5.04.16: (rgb>hsv (hsv>rgb 0 1.000 0.560))"
-        '(0 1.000 0.560)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 0 1.000 0.560)) rgb>hsv)))
-      (test
-        "5.04.17: (rgb>hsv (hsv>rgb 71 0.730 0.790))"
-        '(71 0.730 0.790)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 71 0.730 0.790)) rgb>hsv)))
-      (test
-        "5.04.18: (rgb>hsv (hsv>rgb 145 1.000 0.890))"
-        '(145 1.000 0.890)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 145 1.000 0.890)) rgb>hsv)))
-      (test
-        "5.04.19: (rgb>hsv (hsv>rgb 218 0.500 0.670))"
-        '(218 0.500 0.670)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 218 0.500 0.670)) rgb>hsv)))
-      (test
-        "5.04.20: (rgb>hsv (hsv>rgb 288 0.890 0.910))"
-        '(288 0.890 0.910)
-        (collect-values
-          (call-with-values (lambda () (hsv>rgb 288 0.890 0.910)) rgb>hsv)))
-)))
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 287 1.000 1.000)) rgb>hsv))))
+
+     (test
+        "5.04.19: (rgb>hsv (hsv>rgb 288 0.915 0.925))"
+        '(288 0.915 0.925)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 288 0.915 0.925)) rgb>hsv))))
+
+     (test
+        "5.04.20: (rgb>hsv (hsv>rgb 288 0.892 0.906))"
+        '(288 0.892 0.906)
+        (collect-values*
+          (lambda ()
+            (call-with-values (lambda () (hsv>rgb 288 0.892 0.906)) rgb>hsv))))
+
+))
+
+)
 
 (test-exit)
+
