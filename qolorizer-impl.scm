@@ -288,25 +288,6 @@
   (check-hsv hm sm vm)
   (lambda (hi si vi) (check-hsv hi si vi) (values hi si vm)))
 
-
-(define (source-over ri gi bi ai rm gm bm am)
-  ; (let* ((a (- 1 (* (- 1 am) (- 1 ai)))) ; don't know where I got this
-  ; (let* ((a (- (+ ai am) (/ ai am)))     ; I think this is an error
-  (let* ((a (- (+ ai am) (* ai am)))       ; based on W3C Compositing
-         (f
-           (lambda (ci cm)
-             (/ (+ (* cm am) (* ci ai (- 1 am))) a))))
-    (values (f ri rm) (f gi gm) (f bi bm) a)))
-
-(define (composite-op am #!optional (method 'source-over))
-  (let ((op
-         (case method
-           ((source-over) source-over)
-           (else (error (sprintf "Unsupported compositing method: '~A'" method))))))
-    (lambda (ri gi bi ai rm gm bm)
-      (let-values (((r g b a) (op ri gi bi ai rm gm bm am)))
-        (color/rgba (x>int255 r) (x>int255 g) (x>int255 b) (x>int255 a))))))
-
 (define (mk-blend-op color-spec #!key (blend-mode 'normal) (alpha #f))
   (let-values (((rm gm bm am) (parse-color color-spec alpha)))
     (let* ((mk-rgb-op
@@ -328,8 +309,6 @@
                         `((color . ,color-op) (hue . ,hue-op)
                           (saturation . ,saturation-op) (value . ,value-op)))
                       (error (sprintf "Invalid blend mode: '~A'" blend-mode)))))
-           (composite
-             (composite-op am))
            (blend
              (if mk-rgb-op
                (let ((rop (mk-rgb-op rm))
@@ -342,24 +321,22 @@
                      (let-values (((hi si vi) (rgb>hsv ri gi bi)))
                        (let-values (((h s v) (base-op hi si vi)))
                          (hsv>rgb h s v)))))))))
-      (lambda (ri gi bi ai)
+      (lambda (ri gi bi)
         (let-values (((rb gb bb) (blend ri gi bi)))
-          (composite ri gi bi ai rb gb bb))))))
-                    
+          (color/rgba (x>int255 rb) (x>int255 gb) (x>int255 bb) (x>int255 am)))))))
 
 (define (colorize src-img pixel-op)
   (let* ((width (image-width src-img))
          (height (image-height src-img))
-         (dest (image-create width height)))
+         (mask (image-create width height)))
     (let hloop ((x 0))
       (when (< x width)
         (let vloop ((y 0))
           (when (< y height)
             (let-values (((ri* gi* bi* ai*) (image-pixel/rgba src-img x y)))
-              (let-values (((ri gi bi ai) (values (/ ri* 255) (/ gi* 255) (/ bi* 255) (/ ai* 255))))
-                (let ((final-color (pixel-op ri gi bi ai)))
-                  (image-draw-pixel dest final-color x y))))
+              (let-values (((ri gi bi) (values (/ ri* 255) (/ gi* 255) (/ bi* 255))))
+                (let ((final-color (pixel-op ri gi bi)))
+                  (image-draw-pixel mask final-color x y))))
           (vloop (+ y 1))))
         (hloop (+ x 1))))
-    dest))
-
+    (image-blend src-img mask)))
