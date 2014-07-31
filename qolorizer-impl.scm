@@ -99,7 +99,7 @@
           (values (+ h 360) s v)
           (values h s v))))))
 
-(define (parse-color spec alpha)
+(define (parse-color255 spec alpha)
   (let ((s>n
           (lambda (s) (/ (string->number (string-append "#x" s)) 255)))
         (c>s
@@ -151,6 +151,10 @@
            (badspec))))
       (else
         (badspec)))))
+
+(define (parse-color spec alpha)
+  (let-values (((r g b a) (parse-color255 spec alpha)))
+    (values (/ r 255) (/ g 255) (/ b 255) a)))
 
 (define (normal-op m)
   (check1 m) 
@@ -345,7 +349,11 @@
       (lambda (ri gi bi ai)
         (let-values (((rb gb bb) (blend ri gi bi)))
           (composite ri gi bi ai rb gb bb))))))
-                    
+
+(define (mkop-rgbmax color-spec)
+  (let-values (((rm gm bm am) (parse-color255 color-spec)))
+    (lambda (ri gi bi ai)
+      (color/rgba (max ri rm) (max gi gm) (max bi bm) ai))))
 
 (define (colorize src-img pixel-op)
   (let* ((width (image-width src-img))
