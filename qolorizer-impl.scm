@@ -99,6 +99,59 @@
           (values (+ h 360) s v)
           (values h s v))))))
 
+;; These HSL <-> RGB formulas are from easyrgb.com
+(define (hsl>rgb H S L)
+  (let ((hue>rgb
+         (lambda (a b H)
+           (let ((h
+                   (cond
+                     ((< H 0) (+ H 1))
+                     ((> H 1) (- H 1))
+                     (else h))))
+              (cond
+                ((< (* h 6) 1) (+ a (* (- b a) 6 h)))
+                ((< (* h 2) 1) b)
+                ((< (* h 3) 2) (+ a (* (- b a) (- (/ 2 3) h) 6)))
+                (else a))))))
+    (if (= s 0)
+      (values L L L)
+      (let* ((b (if (< L 0.5) (* L (+ 1 S)) (- (+ L S) (* S L))))
+             (a (- (* 2 L) b)))
+        (values
+          (hue>rgb a b (+ H (/ 1 3))) 
+          (hue>rgb a b H)
+          (hue>rgb a b (- H (/ 1 3))))))))
+                  
+(define (rgb>hsl r g b)
+  (let* ((cmax (max r g b))
+         (cmin (min r g b))
+         (delta (- cmax cmin))
+         (L (/ (+ cmax cmin) 2)))
+    (if (= delta 0)
+      (values 0 0 L)
+      (let ((S
+             (if (< L 0.5)
+               (/ delta (+ cmax cmin))
+               (/ delta (- (- 2 cmax) cmin))))
+            (r*
+              (/ (+ (/ (- cmax r) 6) (/ cmax 2)) cmax))
+            (g*
+              (/ (+ (/ (- cmax g) 6) (/ cmax 2)) cmax))
+            (b*
+              (/ (+ (/ (- cmax b) 6) (/ cmax 2)) cmax))
+            (h
+              (cond
+                ((= cmax r) (- b* g*))
+                ((= cmax g) (- (+ (/ 1 3) r*) b*))
+                (else (- (+ (/ 2 3) g*) r*))))
+            (H
+              (cond
+                ((< h 0) (+ h 1))
+                ((> h 1) (- h 1))
+                (else h))))
+        (values H S L)))))
+
+
 (define (parse-color spec alpha)
   (let ((s>n
           (lambda (s) (/ (string->number (string-append "#x" s)) 255)))
