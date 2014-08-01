@@ -102,6 +102,8 @@
 (define (parse-color255 spec alpha)
   (let ((s>n
           (lambda (s) (/ (string->number (string-append "#x" s)) 255)))
+        (s>n255
+          (lambda (s) (string->number (string-append "#x" s))))
         (c>s
           (lambda (c) (list->string (list c c))))
         (badspec
@@ -121,7 +123,7 @@
                      (and (= (length spec) 4) (cadddr spec))
                      1.0)
                    1)))
-          (values (/ r 255) (/ g 255) (/ b 255) a)))
+          (values r g b (x>int255 a))))
       ((and (string? spec) (eqv? (string-ref spec 0) #\#))
         (let ((len (string-length spec)))
           (let-values (((r* g* b*)
@@ -139,10 +141,10 @@
                           (and (not alpha)
                                (or (and (= len 5) (c>s (string-ref spec 4)))
                                    (and (= len 9) (substring spec 7 9))))))
-            (values (s>n r*) (s>n g*) (s>n b*)
-                    (or (and a* (s>n a*))
-                        (and alpha (verify alpha 1))
-                        1.0)))))
+            (values (s>n255 r*) (s>n255 g*) (s>n255 b*)
+                    (or (and a* (s>n255 a*))
+                        (and alpha (x>int255 (verify alpha 1)))
+                        255)))))
       ((string? spec)
        (let* ((parts (map string->number (string-split spec ",")))
               (len (length parts)))
@@ -154,7 +156,7 @@
 
 (define (parse-color spec alpha)
   (let-values (((r g b a) (parse-color255 spec alpha)))
-    (values (/ r 255) (/ g 255) (/ b 255) a)))
+    (values (/ r 255) (/ g 255) (/ b 255) (/ a 255))))
 
 (define (normal-op m)
   (check1 m) 
@@ -350,10 +352,10 @@
         (let-values (((rb gb bb) (blend ri gi bi)))
           (composite ri gi bi ai rb gb bb))))))
 
-(define (mkop-rgbmax color-spec)
+(define (mkop-rgb-ior color-spec)
   (let-values (((rm gm bm am) (parse-color255 color-spec)))
     (lambda (ri gi bi ai)
-      (color/rgba (max ri rm) (max gi gm) (max bi bm) ai))))
+      (values (bitwise-ior ri rm) (bitwise-ior gi gm) (bitwise-ior bi bm) ai))))
 
 (define (colorize src-img pixel-op)
   (let* ((width (image-width src-img))
@@ -370,4 +372,3 @@
           (vloop (+ y 1))))
         (hloop (+ x 1))))
     dest))
-
