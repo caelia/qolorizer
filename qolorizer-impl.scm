@@ -361,6 +361,15 @@
       (lambda (ri gi bi ai)
         (values (bitwise-ior ri rm) (bitwise-ior gi gm) (bitwise-ior bi bm) ai)))))
 
+(define (mkop-rgb-max color-spec #!optional (alpha 1))
+  (let-values (((rm* gm* bm* am) (parse-color255 color-spec alpha)))
+    (let* ((ax (/ am 255))
+           (rm (x>int (* rm* ax)))
+           (gm (x>int (* gm* ax)))
+           (bm (x>int (* bm* ax))))
+      (lambda (ri gi bi ai)
+        (values (max ri rm) (max gi gm) (max bi bm) ai)))))
+
 (define (colorize src-img pixel-op)
   (let* ((width (image-width src-img))
          (height (image-height src-img))
