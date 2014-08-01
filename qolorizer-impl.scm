@@ -301,7 +301,10 @@
   (let* ((a (- (+ ai am) (* ai am)))       ; based on W3C Compositing
          (f
            (lambda (ci cm)
-             (/ (+ (* cm am) (* ci ai (- 1 am))) a))))
+             (/ (+ (* (- 1 ai) cm am)
+                   (* (- 1 am) ci ai)
+                   (* am ai cm))
+                a))))
     (values (f ri rm) (f gi gm) (f bi bm) a)))
 
 (define (composite-op am #!optional (method 'source-over))
