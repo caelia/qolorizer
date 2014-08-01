@@ -1,5 +1,5 @@
 (module qolorizer
-        (colorize mk-blend-op)
+        (colorize mk-blend-op mkop-rgb-ior)
         
         (import scheme chicken)
 
