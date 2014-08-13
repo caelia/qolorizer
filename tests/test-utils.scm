@@ -1,6 +1,11 @@
 (use test)
 (use imlib2)
 
+(define (zpad x digits)
+  (let* ((xstr (number->string x))
+         (padlen (max (- digits (string-length xstr)) 0)))
+    (string-append (make-string padlen #\0) xstr)))
+
 (define (collect-values f . args)
   (call-with-values
     (lambda () (apply f args))
@@ -94,3 +99,19 @@
         ((>= y height) (reverse rows)) 
         ((>= x width) (loop 0 (+ y ystep) (cons (reverse row-pxx) rows) '()))
         (else (loop (+ x xstep) y rows (cons (collect-values image-pixel/rgba img x y) row-pxx)))))))
+
+(define default-blend-modes
+  '("addition" "burn" "color" "darken_only" "difference"
+    "divide" "dodge" "grain_extract" "grain_merge" "hardlight"
+    "hue" "lighten_only" "multiply" "normal" "saturation"
+    "screen" "subtract" "value")) 
+
+(define default-colors
+  '("000000" "0000ff" "00ff00" "27249c" "54fa0d" "5c5c5c" "775acf" "7f7d0a"
+    "808080" "899675" "98d5e4" "b5b5b5" "cd1f3c" "f62db6" "ff0000" "ffffff"))
+
+(define default-alpha-levels
+  '("0.2" "0.43" "0.6" "0.78" "1.0"))
+
+(define (mk-img-path dir blend color alpha #!optional (base "colors.png"))
+  (foldl make-pathname dir `(,blend ,color ,alpha ,base)))

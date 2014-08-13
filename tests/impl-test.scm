@@ -2078,10 +2078,50 @@
         (collect-values*
           (lambda ()
             (call-with-values (lambda () (hsv>rgb 288 0.892 0.906)) rgb>hsv))))
-
 ))
-
 )
+
+(test-group "[6] Detailed results of composite function"
+  (let mode-loop ((m 1) (modes default-blend-modes))
+    (unless (null? modes)
+      (let ((mode (car modes))
+            (mode-idx (zpad m 2)))
+        (test-group (sprintf "[6.~A] ~A" mode-idx mode)
+          (let color-loop ((c 1) (colors default-colors))
+            (unless (null? colors)
+              (let ((color (car colors))
+                    (color-idx (zpad c 2)))
+                (test-group (sprintf "[6.~A.~A] ~A/~A" mode-idx color-idx mode color)
+                  (let alpha-loop ((a 1) (alphas default-alphas))
+                    (unless (null? alphas)
+                      (let ((alpha (car alphas))
+                            (alpha-idx (zpad c 2)))
+                        (test-group
+                          (sprintf "[6.~A.~A.~A] ~A/~A/~A"
+                                   mode-idx color-idx alpha-idx mode color alpha)
+                          (let* ((test-img-path (mk-img-path "images/test" mode color alpha))
+                                 (img (image-load test-img-path))
+                                 (test-pxx (sample-pixels img 4 8 y0: 2 ystep: 4))
+                                 (rows (length test-pxx))
+                                 (cols (length (car test-pxx))))
+                            (image-destroy img)
+                            (let pix-loop ((y 0) (x 0))
+                              (cond
+                                ((>= y rows) #f)
+                                ((>= x cols) (pix-loop (+ y 1) 0))
+                                (else
+                                  (let ((ref-pixel (list-ref (list-ref ref-pxx y) x))
+                                        (test-pixel (list-ref (list-ref test-pxx y) x)))
+                                    (test
+                                      (sprintf "6.~A.~A.~A-~A-~A: ~A/~A/~A (~A, ~A)"
+                                               mode-idx color-idx alpha-idx x y
+                                               mode color alpha x y)
+                                      ref-pixel
+                                      test-pixel))
+                                  (pix-loop y (+ x 1))))))))
+                      (alpha-loop (+ a 1) (cdr alphas))))))
+              (color-loop (+ c 1) (cdr colors))))))
+      (mode-loop (+ m 1) (cdr modes)))))
 
 (test-exit)
 
