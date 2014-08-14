@@ -115,3 +115,13 @@
 
 (define (mk-img-path dir blend color alpha #!optional (base "colors.png"))
   (foldl make-pathname dir `(,blend ,color ,alpha ,base)))
+
+(define (mode-sym mode-name) 
+  (alist-ref
+    mode-name
+    '(("addition" . addition) ("burn" . burn) ("color" . color) ("darken_only" . darken-only)
+      ("difference" . difference) ("divide" . divide) ("dodge" . dodge) ("grain_extract" . grain-extract)
+      ("grain_merge" . grain-merge) ("hardlight" . hard-light) ("hue" . hue) ("lighten_only" . lighten-only)
+      ("multiply" . multiply) ("normal" . normal) ("saturation" . saturation) ("screen" . screen)
+      ("subtract" . subtract) ("value" . value))
+    string=?))
