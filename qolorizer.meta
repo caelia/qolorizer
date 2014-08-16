@@ -1,6 +1,6 @@
 ((license "BSD")
  (category graphics)
- (depends cairo)
+ (depends (cairo "0.1.15"))
  (test-depends test base64 z3)   
  (author "Matt Gushee")
  (synopsis "A small library for colorizing monochrome images."))
