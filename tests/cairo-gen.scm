@@ -2,9 +2,10 @@
 (import extras)
 
 (define blend-modes
-  '(multiply screen overlay darken-only lighten-only
-    dodge burn hard-light soft-light difference
-    exclusion hue saturation color luminosity))
+  '(normal multiply screen overlay darken-only
+    lighten-only dodge burn hard-light soft-light
+    difference exclusion hue saturation color
+    luminosity))
 
 (define colors
   '("000000" "0000ff" "00ff00" "27249c" "54fa0d" "5c5c5c" "775acf" "7f7d0a"

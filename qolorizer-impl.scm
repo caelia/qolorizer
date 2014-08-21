@@ -114,14 +114,14 @@
 (define (get-cairo-blend-mode mode)
   (alist-ref
     mode
-    `((multiply . ,CAIRO_OPERATOR_MULTIPLY) (screen . ,CAIRO_OPERATOR_SCREEN)
-      (overlay . ,CAIRO_OPERATOR_OVERLAY) (darken-only . ,CAIRO_OPERATOR_DARKEN)
-      (lighten-only . ,CAIRO_OPERATOR_LIGHTEN) (dodge . ,CAIRO_OPERATOR_COLOR_DODGE)
-      (burn . ,CAIRO_OPERATOR_COLOR_BURN) (hard-light . ,CAIRO_OPERATOR_HARD_LIGHT)
-      (soft-light . ,CAIRO_OPERATOR_SOFT_LIGHT) (difference . ,CAIRO_OPERATOR_DIFFERENCE)
-      (exclusion . ,CAIRO_OPERATOR_EXCLUSION) (hue . ,CAIRO_OPERATOR_HSL_HUE)
-      (saturation . ,CAIRO_OPERATOR_HSL_SATURATION) (color . ,CAIRO_OPERATOR_HSL_COLOR)
-      (luminosity . ,CAIRO_OPERATOR_HSL_LUMINOSITY))))
+    `((normal . ,CAIRO_OPERATOR_OVER) (multiply . ,CAIRO_OPERATOR_MULTIPLY)
+      (screen . ,CAIRO_OPERATOR_SCREEN) (overlay . ,CAIRO_OPERATOR_OVERLAY)
+      (darken-only . ,CAIRO_OPERATOR_DARKEN) (lighten-only . ,CAIRO_OPERATOR_LIGHTEN)
+      (dodge . ,CAIRO_OPERATOR_COLOR_DODGE) (burn . ,CAIRO_OPERATOR_COLOR_BURN)
+      (hard-light . ,CAIRO_OPERATOR_HARD_LIGHT) (soft-light . ,CAIRO_OPERATOR_SOFT_LIGHT)
+      (difference . ,CAIRO_OPERATOR_DIFFERENCE) (exclusion . ,CAIRO_OPERATOR_EXCLUSION)
+      (hue . ,CAIRO_OPERATOR_HSL_HUE) (saturation . ,CAIRO_OPERATOR_HSL_SATURATION)
+      (color . ,CAIRO_OPERATOR_HSL_COLOR) (luminosity . ,CAIRO_OPERATOR_HSL_LUMINOSITY))))
                     
 (define (mk-blend-op color-spec #!key (blend-mode 'normal) (alpha #f))
   (let-values (((r g b a) (parse-color color-spec alpha)))
