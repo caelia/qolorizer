@@ -47,3 +47,41 @@
             (process-file src-file color-spec blend-mode: blend-mode alpha: alpha))))
       (filter (lambda (f) (member (pathname-extension f) (*supported-extensions*)))
               (directory src-dir)))))
+
+(define option-grammar
+  `((output-file "The name of the output image file. This option is ignored if --output-dir is specified."
+                 (value #t)
+                 (single-char #\o))
+    (input-dir "The directory where input files are located. All supported image files in this directory will be processed."
+               (value #t)
+               (single-char #\I))
+    (output-dir "The directory where output files will be written."(value #t)
+                (single-char #\O))
+    (color "The RGB[A] color to apply to the image. The color may be specified in either of two formats: either a
+            CSS-style hexadecimal color string such as '#c7de29' or a comma-separated list of decimal integers, such
+            as '127,221,94'. The default color is '#000000' (black)."
+           (value #t)
+           (single-char #\c))
+    (mode "The blend mode operator to apply [default=normal]. Supported values are:
+              normal
+              multiply 
+              screen
+              overlay 
+              darken-only
+              lighten-only 
+              dodge
+              burn 
+              hard-light
+              soft-light 
+              difference
+              exclusion 
+              hue
+              saturation 
+              color
+              luminosity
+           See <http://cairographics.org/operators/> for more info."
+          (value #t)
+          (single-char #\m))
+    (alpha "The alpha value of the color layer, expressed as a number from 0-1 [default=1.0]."
+           (value #t)
+           (single-char #\a)))))
