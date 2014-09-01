@@ -1,7 +1,7 @@
 (use qolorizer)
 (use irregex)
 (use posix)
-(user srfi-1)
+(use srfi-1)
 (use getopt-long)
 
 (define *supported-extensions* (make-parameter '("png")))
@@ -18,9 +18,9 @@
               (irregex-replace/all "%f"
                 (irregex-replace/all "%d" pattern dir)
                 base)
-              mode)
+              (symbol->string mode))
             color)
-          alpha)
+          (number->string alpha))
           ext))))
   
 (define (process-file src color-spec
@@ -31,6 +31,7 @@
             (let ((patt (or dest-pattern "%d/%f-%m-%c-%a")))
               (mk-dest-name patt src blend-mode color-spec alpha))))
         (blend (mk-blend-op color-spec blend-mode: blend-mode alpha: alpha)))
+    (create-directory (pathname-directory dest-file) #t)
     (colorize blend src dest-file)))
   
 (define (process-dir src-dir color-spec
@@ -40,15 +41,16 @@
             (dest dest)
             (dest-pattern
               (let ((patt (or dest-pattern "%m/%c/%a/%f")))
-                (mk-dest-name patt src blend-mode color-spec alpha)))
+                (mk-dest-name patt src-dir blend-mode color-spec alpha)))
             (else (error "When processing a directory you must specify a destination directory name or pattern.")))))
     (for-each
       (lambda (src-file)
         (let-values (((_ base ext) (decompose-pathname src-file)))
-          (let ((dest-file (make-pathname dest base ext)))
+          (let ((dest-file (make-pathname dest-dir base ext)))
             (process-file src-file color-spec blend-mode: blend-mode alpha: alpha dest: dest-file))))
-      (filter (lambda (f) (member (pathname-extension f) (*supported-extensions*)))
-              (directory src-dir)))))
+        (map (lambda (f) (make-pathname src-dir f))
+          (filter (lambda (f) (member (pathname-extension f) (*supported-extensions*)))
+            (directory src-dir))))))
 
 (define option-grammar
   `((output-file "The name of the output image file. This option is ignored if --output-dir is specified."
@@ -93,21 +95,22 @@
            (single-char #\a))))
 
 (define (cl-run)
-  (let* ((parsed-args (getopt-long (argv) option-grammar))
+  (let* ((parsed-args (getopt-long (cdr (argv)) option-grammar))
          (inputs (alist-ref '@ parsed-args))
          (output-file (alist-ref 'output-file parsed-args))
          (output-dir (alist-ref 'output-dir parsed-args))
          (file-pattern (alist-ref 'file-pattern parsed-args))
          (dir-pattern (alist-ref 'dir-pattern parsed-args))
          (color (alist-ref 'color parsed-args))
-         (mode (or (alist-ref 'mode parsed-args) 'normal))
+         (mode-arg (alist-ref 'mode parsed-args))
+         (mode (if mode-arg (string->symbol mode-arg) 'normal))
          (alpha-arg (alist-ref 'alpha parsed-args))
          (alpha (if alpha-arg (string->number alpha-arg) 1.0)))
     (for-each
       (lambda (input)
         (cond
           ((not (file-exists? input))
-            (error (sprintf "The input file '~A' does not exist.")))
+            (error (sprintf "The input file '~A' does not exist." input)))
           ((directory? input)
             (process-dir input color blend-mode: mode alpha: alpha dest: output-dir dest-pattern: dir-pattern))
           (else
