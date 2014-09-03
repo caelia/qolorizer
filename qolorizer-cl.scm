@@ -36,15 +36,17 @@
 (define (process-dir src-dir color-spec
                      #!key (blend-mode 'normal) (alpha 1.0) (dest #f) (dest-pattern #f))
   (let ((dest-dir
-          (if dest
-            dest
-            (let ((patt (or dest-pattern "%m/%c/%a/%f")))
-              (mk-dest-name patt src blend-mode color-spec alpha)))))
+          (cond
+            (dest dest)
+            (dest-pattern
+              (let ((patt (or dest-pattern "%m/%c/%a/%f")))
+                (mk-dest-name patt src blend-mode color-spec alpha)))
+            (else (error "When processing a directory you must specify a destination directory name or pattern.")))))
     (for-each
       (lambda (src-file)
         (let-values (((_ base ext) (decompose-pathname src-file)))
           (let ((dest-file (make-pathname dest base ext)))
-            (process-file src-file color-spec blend-mode: blend-mode alpha: alpha))))
+            (process-file src-file color-spec blend-mode: blend-mode alpha: alpha dest: dest-file))))
       (filter (lambda (f) (member (pathname-extension f) (*supported-extensions*)))
               (directory src-dir)))))
 
@@ -55,11 +57,15 @@
   `((output-file "The name of the output image file. This option is ignored if --output-dir is specified."
                  (value #t)
                  (single-char #\o))
-    (input-dir "The directory where input files are located. All supported image files in this directory will be processed."
-               (value #t)
-               (single-char #\I))
-    (output-dir "The directory where output files will be written."(value #t)
+    (output-dir "The directory where output files will be written."
+                (value #t)
                 (single-char #\O))
+    (file-pattern "A substitution pattern for output file names."
+                  (value #t)
+                  (single-char #\p))
+    (dir-pattern "A substitution pattern for output dircectory names."
+                 (value #t)
+                 (single-char #\P))
     (color "The RGB[A] color to apply to the image. The color may be specified in either of two formats: either a
             CSS-style hexadecimal color string such as '#c7de29' or a comma-separated list of decimal integers, such
             as '127,221,94'. The default color is '#000000' (black)."
@@ -114,3 +120,36 @@
         (for-each
           (lambda (file)
             (let ((output-dir (or output-dir (pathname-directory file))))))
+           (single-char #\a))))
+
+(define (cl-run)
+  (let* ((parsed-args (getopt-long (argv) option-grammar))
+         (inputs (alist-ref '@ parsed-args))
+         (output-file (alist-ref 'output-file parsed-args))
+         (output-dir (alist-ref 'output-dir parsed-args))
+         (file-pattern (alist-ref 'file-pattern parsed-args))
+         (dir-pattern (alist-ref 'dir-pattern parsed-args))
+         (color (alist-ref 'color parsed-args))
+         (mode (or (alist-ref 'mode parsed-args) 'normal))
+         (alpha-arg (alist-ref 'alpha parsed-args))
+    (cond
+      ((not inputs)
+        (error "Please specify an input file or directory."))
+      ((and output-dir output-files)
+        (error "Please specify an output file OR directory, not both."))
+      ((and output-file (> (length inputs) 1))
+        (error "You may not specify a single output file with multiple input files."))
+         (alpha (if alpha-arg (string->number alpha-arg) 1.0))
+      (else
+        (for-each
+          (lambda (input)
+            (cond
+              ((not (file-exists? input))
+                (error (sprintf "The input file '~A' does not exist.")))
+              ((directory? input)
+                (process-dir input color blend-mode: mode alpha: alpha dest: output-dir dest-pattern: dir-pattern))
+              (else
+                (process-file input color blend-mode: mode alpha: alpha dest: output-file dest-pattern: file-pattern))))
+          inputs)))))
+
+(cl-run)
