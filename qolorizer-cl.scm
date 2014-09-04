@@ -25,13 +25,14 @@
   
 (define (process-file src color-spec
                       #!key (blend-mode 'normal) (alpha 1.0) (dest #f) (dest-pattern #f))
-  (let ((dest-file
+  (let* ((dest-file
           (if dest
             dest
             (let ((patt (or dest-pattern "%d/%f-%m-%c-%a")))
               (mk-dest-name patt src blend-mode color-spec alpha))))
-        (blend (mk-blend-op color-spec blend-mode: blend-mode alpha: alpha)))
-    (create-directory (pathname-directory dest-file) #t)
+         (dest-dir (pathname-directory dest-file))
+         (blend (mk-blend-op color-spec blend-mode: blend-mode alpha: alpha)))
+    (when dest-dir (create-directory dest-dir #t))
     (colorize blend src dest-file)))
   
 (define (process-dir src-dir color-spec
