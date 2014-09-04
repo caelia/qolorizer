@@ -52,6 +52,9 @@
           (filter (lambda (f) (member (pathname-extension f) (*supported-extensions*)))
             (directory src-dir))))))
 
+(define (usage)
+  (printf "~A [options] [input_file]\n" (car (argv))))
+              
 (define option-grammar
   `((output-file "The name of the output image file. This option is ignored if --output-dir is specified."
                  (value #t)
@@ -92,6 +95,33 @@
           (single-char #\m))
     (alpha "The alpha value of the color layer, expressed as a number from 0-1 [default=1.0]."
            (value #t)
+           (single-char #\a))
+    (help "Show this message."
+          (single-char #\h))))
+          
+(define (cl-run)
+  (let* ((args (getopt-long (argv) option-grammar))
+         (output-file (alist-ref 'output-file args))
+         (output-dir (alist-ref 'output-dir args))
+         (input-dir (alist-ref 'input-dir args))
+         (color (alist-ref 'color args))
+         (mode (alist-ref 'mode args))
+         (alpha (alist-ref 'alpha args))
+         (help (alist-ref 'help args))
+         (input-files (alist-ref '@ args)))
+    (cond
+      ((not (or input-dir input-files))
+        (error "Please specify an input file or directory."))
+      ((and input-dir input-files)
+        (error "Please specify an input file OR directory, not both."))
+      ((and output-dir output-files)
+        (error "Please specify an output file OR directory, not both."))
+      ((and output-file (> (length input-files) 1))
+        (error "You may not specify a single output file with multiple input files."))
+      (input-files
+        (for-each
+          (lambda (file)
+            (let ((output-dir (or output-dir (pathname-directory file))))))
            (single-char #\a))))
 
 (define (cl-run)
@@ -106,15 +136,33 @@
          (mode (if mode-arg (string->symbol mode-arg) 'normal))
          (alpha-arg (alist-ref 'alpha parsed-args))
          (alpha (if alpha-arg (string->number alpha-arg) 1.0)))
-    (for-each
-      (lambda (input)
-        (cond
-          ((not (file-exists? input))
-            (error (sprintf "The input file '~A' does not exist." input)))
-          ((directory? input)
-            (process-dir input color blend-mode: mode alpha: alpha dest: output-dir dest-pattern: dir-pattern))
-          (else
-            (process-file input color blend-mode: mode alpha: alpha dest: output-file dest-pattern: file-pattern))))
-      inputs)))
+    (cond
+      ((not inputs)
+        (error "Please specify an input file or directory."))
+      ((and output-dir output-files)
+        (error "Please specify an output file OR directory, not both."))
+      ((and output-file (> (length inputs) 1))
+        (error "You may not specify a single output file with multiple input files."))
+      (else
+        (for-each
+          (lambda (input)
+            (cond
+              ((not (file-exists? input))
+                (error (sprintf "The input file '~A' does not exist." input)))
+              ((directory? input)
+                (process-dir input
+                             color
+                             blend-mode: mode
+                             alpha: alpha
+                             dest: output-dir
+                             dest-pattern: dir-pattern))
+              (else
+                (process-file input
+                              color
+                              blend-mode: mode
+                              alpha: alpha
+                              dest: output-file
+                              dest-pattern: file-pattern))))
+          inputs)))))
 
 (cl-run)
