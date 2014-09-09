@@ -13,6 +13,12 @@
 
 (define (base-image-path filename)
   (make-pathname (make-pathname (*image-path*) (*base-image-suffix*)) filename))
+  
+(define (deslash path)
+  (let ((chars (string->list path)))
+    (if (eqv? (car chars) #\/)
+      (list->string (cdr chars))
+      path)))
 
 (define (list->pathname segments)
   (unless (pair? segments)
@@ -22,7 +28,7 @@
 (define (parse-colorized-image-path pathstr)
   (let ((segments (uri-path (uri-reference pathstr))))
     (match segments
-      [(/ mode color alpha . rest)
+      [(mode color alpha . rest)
        (values (list->pathname segments)
                (string->symbol mode)
                (string-append "#" color)
@@ -48,7 +54,7 @@
     
 (define (handle-request in out err env)
   (let ((path (alist-ref "REQUEST_URI" (env) string=?)))
-    (save-and-send path out)))
+    (save-and-send (deslash path) out)))
     
     
 (define option-grammar
