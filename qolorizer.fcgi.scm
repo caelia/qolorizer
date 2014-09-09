@@ -34,6 +34,7 @@
 ;; In my opinion, your web server should serve existing images and
 ;; delegate only requests for nonexistent images to this program.
 (define (save-and-send path out)
+  (fprintf (current-error-port) "Creating image '~A'" path)
   (let-values (((dest-path mode color alpha sub-path) (parse-colorized-image-path path)))
     (let ((base-path (base-image-path sub-path)))
       (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path))
