@@ -6,6 +6,7 @@
 (use uri-common)
 (use matchable)
 (use files)
+(use utils)
 (use extras)
 
 (define *image-path* (make-parameter #f))
@@ -41,15 +42,24 @@
 ;; In my opinion, your web server should serve existing images and
 ;; delegate only requests for nonexistent images to this program.
 (define (save-and-send path out)
-  (fprintf (current-error-port) "Creating image '~A'" path)
-  (let-values (((dest-path mode color alpha sub-path) (parse-colorized-image-path path)))
-    (let ((base-path (base-image-path sub-path)))
-      (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path))
-  (with-input-from-file
-    dest-path
-    (lambda ()
-      (out (read-all)))
-    #:binary))
+  (let-values (((dest-path* mode color alpha sub-path) (parse-colorized-image-path path)))
+    (let ((dest-path (make-pathname (*image-path*) dest-path*))
+          (base-path (base-image-path sub-path)))
+      (create-directory (pathname-directory dest-path) #t)
+      (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path)
+      (let* ((response-data
+              (with-input-from-file dest-path read-all #:binary))
+             (hdrs
+               (headers
+                 `((content-type . ("image/png"))
+                   (content-length . (,(string-length response-data)))))))
+        (out
+          (with-output-to-string
+            (lambda ()
+              (let ((resp (make-response port: (current-output-port) headers: hdrs)))
+                (write-response resp)
+                (display response-data)
+                (finish-response-body resp))))))))
   #t)
     
 (define (handle-request in out err env)
