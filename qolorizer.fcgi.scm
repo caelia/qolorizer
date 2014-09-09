@@ -6,6 +6,7 @@
 (use uri-common)
 (use matchable)
 (use files)
+(use extras)
 
 (define *image-path* (make-parameter #f))
 (define *base-image-suffix* (make-parameter "base"))
@@ -19,12 +20,12 @@
   (foldl make-pathname (->string (car segments)) (cdr segments)))
 
 (define (parse-colorized-image-path pathstr)
-  (let ((segments (uri-path (uri-reference path))))
+  (let ((segments (uri-path (uri-reference pathstr))))
     (match segments
-      [(mode color alpha . rest)
+      [(/ mode color alpha . rest)
        (values (list->pathname segments)
                (string->symbol mode)
-               color
+               (string-append "#" color)
                (string->number alpha)
                (list->pathname rest))]
       [_
@@ -70,6 +71,6 @@
                             (string->number tcp-port-arg)
                             3429))))
     (*image-path* image-path)
-    (accept-loop socket/port 0 handle-request)))
+    (fcgi-accept-loop socket/port 0 handle-request)))
     
 (start)
