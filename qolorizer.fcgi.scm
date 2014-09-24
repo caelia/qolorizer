@@ -30,43 +30,62 @@
   (let ((segments (uri-path (uri-reference pathstr))))
     (match segments
       [(mode color alpha . rest)
-       (values (list->pathname segments)
-               (string->symbol mode)
-               (string-append "#" color)
-               (string->number alpha)
-               (list->pathname rest))]
+       (list (list->pathname segments)
+             (string->symbol mode)
+             (string-append "#" color)
+             (string->number alpha)
+             (list->pathname rest))]
       [_
-       (error "Invalid path specification.")])))
+        #:invalid-path])))
+
+(define (http-error out code)
+  (let ((hdrs (headers '((status . ("Error"))))))
+    (out
+      (with-output-to-string
+        (lambda ()
+          (write-response (make-response port: (current-output-port) code: code)))))))
 
 ;; This procedure assumes that the requested file does not exist.
 ;; In my opinion, your web server should serve existing images and
 ;; delegate only requests for nonexistent images to this program.
 (define (save-and-send path out)
-  (let-values (((dest-path* mode color alpha sub-path) (parse-colorized-image-path path)))
-    (let ((dest-path (make-pathname (*image-path*) dest-path*))
-          (base-path (base-image-path sub-path)))
-      (create-directory (pathname-directory dest-path) #t)
-      (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path)
-      (let* ((response-data
-              (with-input-from-file dest-path read-all #:binary))
-             (hdrs
-               (headers
-                 `((content-type . ("image/png"))
-                   (content-length . (,(string-length response-data)))))))
-        (out
-          (with-output-to-string
-            (lambda ()
-              (let ((resp (make-response port: (current-output-port) headers: hdrs)))
-                (write-response resp)
-                (display response-data)
-                (finish-response-body resp))))))))
+  (handle-exceptions
+    _
+    (http-error out 500)
+    (let ((path-data (parse-colorized-image-path path)))
+      (match path-data
+        [(dest-path* mode color alpha sub-path)
+          (let ((dest-path (make-pathname (*image-path*) dest-path*))
+                (base-path (base-image-path sub-path)))
+            (if (file-exists? base-path)
+              (begin
+                (create-directory (pathname-directory dest-path) #t)
+                (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path)
+                (let* ((response-data
+                        (with-input-from-file dest-path read-all #:binary))
+                       (hdrs
+                         (headers
+                           `((content-type . ("image/png"))
+                             (content-length . (,(string-length response-data)))))))
+                  (out
+                    (with-output-to-string
+                      (lambda ()
+                        (let ((resp (make-response port: (current-output-port) headers: hdrs)))
+                          (write-response resp)
+                          (display response-data)
+                          (finish-response-body resp)))))))
+              (http-error out 404)))]
+        [#:invalid-path
+          (http-error out 400)]
+        [_
+          (http-error out 500)])))
   #t)
     
 (define (handle-request in out err env)
   (let ((path (alist-ref "REQUEST_URI" (env) string=?)))
     (save-and-send (deslash path) out)))
     
-    
+   
 (define option-grammar
   '((tcp-port "The TCP port to listen on [default: 3429]"
               (value #t)
