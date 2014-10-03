@@ -11,6 +11,7 @@
 
 (define *image-path* (make-parameter #f))
 (define *base-image-suffix* (make-parameter "base"))
+(define *save-image* (make-parameter #t))
 
 (define (base-image-path filename)
   (make-pathname (make-pathname (*image-path*) (*base-image-suffix*)) filename))
@@ -55,8 +56,12 @@
     (let ((path-data (parse-colorized-image-path path)))
       (match path-data
         [(dest-path* mode color alpha sub-path)
-          (let ((dest-path (make-pathname (*image-path*) dest-path*))
-                (base-path (base-image-path sub-path)))
+          (let ((dest-path
+                  (if (*save-image*)
+                    (make-pathname (*image-path*) dest-path*)
+                    (create-temporary-file "png")))
+                (base-path
+                  (base-image-path sub-path)))
             (if (file-exists? base-path)
               (begin
                 (create-directory (pathname-directory dest-path) #t)
