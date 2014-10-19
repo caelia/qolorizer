@@ -103,9 +103,27 @@
 (define (start)
   (let* ((parsed-args (getopt-long (cdr (argv)) option-grammar))
          (rest (alist-ref '@ parsed-args))
-         (image-path (if (null? rest) (current-directory) (car rest)))
-         (unix-socket (alist-ref 'unix-socket parsed-args))
-         (tcp-port-arg (alist-ref 'tcp-port parsed-args))
+         ; Not totally sure about the logic here, but I am giving precedence to the environment
+         ; var under the assumption that it will be passed in by an app container like uwsgi.
+         (image-path-var
+           (get-environment-variable "QOLORIZER_IMAGE_PATH"))
+         (image-path
+           (cond
+             (image-path-var image-path-var)
+             ((null? rest) (current-directory))
+             (else (car rest))))
+         (unix-socket-var
+           (get-environment-variable "QOLORIZER_UNIX_SOCKET"))
+         (unix-socket
+           (if unix-socket-var
+             unix-socket-var
+             (alist-ref 'unix-socket parsed-args))
+         (tcp-port-var
+           (get-environment-variable "QOLORIZER_TCP_PORT"))
+         (tcp-port-arg
+           (if tcp-port-var
+             tcp-port-var
+             (alist-ref 'tcp-port parsed-args)))
          (socket/port (or unix-socket
                           (if tcp-port-arg
                             (string->number tcp-port-arg)
