@@ -49,7 +49,7 @@
 ;; This procedure assumes that the requested file does not exist.
 ;; In my opinion, your web server should serve existing images and
 ;; delegate only requests for nonexistent images to this program.
-(define (save-and-send path out)
+(define (save-and-send path out env)
   (handle-exceptions
     _
     (http-error out 500)
@@ -57,14 +57,24 @@
       (match path-data
         [(dest-path* mode color alpha sub-path)
           (let ((dest-path
-                  (if (*save-image*)
-                    (make-pathname (*image-path*) dest-path*)
-                    (create-temporary-file "png")))
+                  (let ((save-image
+                         (and (not (get-environment-variable "QOLORIZER_NO_SAVE"))
+                              (not (env "QOLORIZER_NO_SAVE" #f))
+                              (*save-image*))))
+                    (if save-image
+                      (let ((image-path
+                             (or (get-environment-variable "QOLORIZER_IMAGE_PATH")
+                                 (env "QOLORIZER_IMAGE_PATH" #f)
+                                 (*image-path*))))
+                        (make-pathname image-path dest-path*))
+                      (create-temporary-file "png"))))
                 (base-path
                   (base-image-path sub-path)))
             (if (file-exists? base-path)
               (begin
                 (create-directory (pathname-directory dest-path) #t)
+                ; The following is just for debugging purposes
+                ; (display (string-append "Generated '" dest-path "'\n") (current-error-port)) 
                 (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path)
                 (let* ((response-data
                         (with-input-from-file dest-path read-all #:binary))
@@ -88,7 +98,7 @@
     
 (define (handle-request in out err env)
   (let ((path (alist-ref "REQUEST_URI" (env) string=?)))
-    (save-and-send (deslash path) out)))
+    (save-and-send (deslash path) out env)))
     
    
 (define option-grammar
@@ -98,26 +108,25 @@
     (unix-socket "The Unix socket to listen on. If provided, this option
                   overrides [--tcp-port|-t]."
                  (value #t)
-                 (single-char #\u))))
+                 (single-char #\u))
+    (no-save "Don't save images; only send them in response to requests."
+             (single-char #\n))))
     
 (define (start)
   (let* ((parsed-args (getopt-long (cdr (argv)) option-grammar))
          (rest (alist-ref '@ parsed-args))
          ; Not totally sure about the logic here, but I am giving precedence to the environment
          ; var under the assumption that it will be passed in by an app container like uwsgi.
-         (image-path-var
-           (get-environment-variable "QOLORIZER_IMAGE_PATH"))
          (image-path
-           (cond
-             (image-path-var image-path-var)
-             ((null? rest) (current-directory))
-             (else (car rest))))
+           (if (null? rest)
+             (current-directory)
+             (car rest)))
          (unix-socket-var
            (get-environment-variable "QOLORIZER_UNIX_SOCKET"))
          (unix-socket
            (if unix-socket-var
              unix-socket-var
-             (alist-ref 'unix-socket parsed-args))
+             (alist-ref 'unix-socket parsed-args)))
          (tcp-port-var
            (get-environment-variable "QOLORIZER_TCP_PORT"))
          (tcp-port-arg
@@ -127,7 +136,9 @@
          (socket/port (or unix-socket
                           (if tcp-port-arg
                             (string->number tcp-port-arg)
-                            3429))))
+                            3429)))
+         (dont-save (alist-ref 'no-save parsed-args)))
+    (when dont-save (*save-image* #f))
     (*image-path* image-path)
     (fcgi-accept-loop socket/port 0 handle-request)))
     
