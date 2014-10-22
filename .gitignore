@@ -6,3 +6,4 @@
 tests/images/ref/
 *.pyc
 *.log
+qolorizer.fcgi
