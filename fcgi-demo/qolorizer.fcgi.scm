@@ -76,20 +76,20 @@
     (let ((path-data (parse-colorized-image-path path)))
       (match path-data
         [(dest-path* mode color alpha sub-path)
-          (let ((dest-path
-                  (let ((save-image
-                         (and (not (get-environment-variable "QOLORIZER_NO_SAVE"))
-                              (not (env "QOLORIZER_NO_SAVE" #f))
-                              (*save-image*))))
-                    (if save-image
-                      (let ((image-path
+          (let* ((save-image
+                   (and (not (get-environment-variable "QOLORIZER_NO_SAVE"))
+                        (not (env "QOLORIZER_NO_SAVE" #f))
+                        (*save-image*)))
+                 (dest-path
+                   (if save-image
+                     (let ((image-path
                              (or (get-environment-variable "QOLORIZER_IMAGE_PATH")
                                  (env "QOLORIZER_IMAGE_PATH" #f)
                                  (*image-path*))))
                         (make-pathname image-path dest-path*))
-                      (create-temporary-file "png"))))
-                (base-path
-                  (base-image-path sub-path)))
+                      (create-temporary-file "png")))
+                 (base-path
+                   (base-image-path sub-path)))
             (if (file-exists? base-path)
               (begin
                 (create-directory (pathname-directory dest-path) #t)
@@ -108,7 +108,9 @@
                         (let ((resp (make-response port: (current-output-port) headers: hdrs)))
                           (write-response resp)
                           (display response-data)
-                          (finish-response-body resp)))))))
+                          (finish-response-body resp)))))
+                  (unless save-image
+                    (delete-file* dest-path))))
               (http-error out 404)))]
         [#:invalid-path
           (http-error out 400)]
