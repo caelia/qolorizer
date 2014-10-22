@@ -171,6 +171,6 @@
     (when log-file (*log-file* log-file))
     (when dont-save (*save-image* #f))
     (*image-path* image-path)
-    (fcgi-accept-loop socket/port 0 handle-request)))
+    (fcgi-accept-loop socket/port 128 handle-request)))
     
 (start)

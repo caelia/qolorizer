@@ -5,41 +5,211 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Salix Media | Projects | Qolorizer</title>
+    <link rel="stylesheet" href="scripts/bgrins-spectrum-ed52c1c/spectrum.css" />
     <style type="text/css">
+      * {
+        font-family: "Montserrat", sans-serif;
+      }
+      body {
+        width: 84%;
+        margin: 0 auto;
+      }
       h1 {
         text-align: center;
       }
-      div.main {
+      div.main-block {
+        display: inline-block;
         margin: 1em auto;
       }
+      #base-block {
+        float: left;
+      }
+      #colorized-block {
+        float: right;
+      }
+      #control-wrapper {
+        padding: 3em 1em 2em 1em;
+      }
       div.image-box {
-        display: inline-block;
+        /* display: inline-block; */
         vertical-align: middle;
-        padding: 1.5em;
+        text-align: center;
+        /* padding: 1.5em; */
+        padding: 0 1.5em;
         background-image: url('images/grid.png');
         background-repeat: repeat;
         border: 1px #909090 inset;
       }
+      div.image-box img {
+        display: block;
+        margin: 1em auto;
+      }
+      h3 {
+        text-align: center;
+        margin-bottom: 1.5em;
+      }
       img {
         margin: auto;
       }
+      .control-block, .radio-block {
+        display: inline-block;
+        vertical-align: top;
+      }
+      #colorpicker-block {
+        width: 32%;
+      }
+      #mode-select-block {
+        width: 40%;
+      }
+      #button-block {
+        width: 22%;
+      }
+      #colorize-button {
+        background-color: #ff4040;
+        font-size: 108%;
+        padding: .8em;
+      }
+      p.note {
+        font-size: 75%;
+      }
     </style>
+    <script type="text/javascript" src="scripts/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="scripts/bgrins-spectrum-ed52c1c/spectrum.js"></script>
+    <script type="text/javascript">
+      var selected_color = "ffffff";
+      var selected_alpha = 1.0;
+      var qolorizer_base_url = "http://localhost:8029/";
+
+      function set_color(hex8str) {
+        selected_color = hex8str.substring(2);
+        selected_alpha = eval("0x" + hex8str.substring(0,2)) / 255;
+      }
+
+      function get_color() {
+        var color = $("#colorpicker").spectrum("get").toHex8();
+        return [color.substring(2), eval("0x" + color.substring(0,2)) / 255];
+      }
+
+      function get_colorized_images(evt) {
+        var rgb_a = get_color(); 
+        var mode = $("input[name='mode-select']:checked").val();
+        // var url = qolorizer_base_url + mode + "/" + selected_color + "/" + selected_alpha + "/";
+        var url = qolorizer_base_url + mode + "/" + rgb_a[0] + "/" + rgb_a[1] + "/";
+        var src_R = url + "R.png";
+        var src_xhatch = url + "xhatch.png";
+        var src_earthsym = url + "earthsym.png";
+        $("#img_R").attr("src", src_R);
+        $("#img_xhatch").attr("src", src_xhatch);
+        $("#img_earthsym").attr("src", src_earthsym);
+      }
+
+      $(document).ready(function() {
+        $("#colorpicker").spectrum({
+          // color: "#f00",
+          preferredFormat: "rgb",
+          flat: true,
+          showAlpha: true,
+          showInitial: true,
+          showInput: true,
+          clickoutFiresChange: true
+        });
+        $("#colorize-button").on("click", get_colorized_images);
+      });
+    </script>
   </head>
   <body>
     <h1>qolorizer demo</h1>
-    <div>
+    <div class="main-block" id="base-block">
+      <h3>Stored greyscale images</h3>
       <div class="image-box">
         <img src="http://localhost:8029/base/R.png" />
         <img src="http://localhost:8029/base/xhatch.png" />
         <img src="http://localhost:8029/base/earthsym.png" />
       </div>
+    </div>
+    <div class="main-block" id="control-wrapper">
       <div class="control-box">
-
+        <form>
+          <input id="colorpicker" class="control-block" id="colorpicker-block"/>
+          <div class="control-block" id="mode-select-block">
+            <p>
+              <img src="images/left.png" />
+              1. Choose a color.
+            </p>
+            <p>
+              <img src="images/down.png" />
+              2. Choose a blend mode.
+            </p>
+            <div class="radio-block">
+              <input type="radio" name="mode-select" id="mode-normal" value="normal" checked="checked"/>
+              <label for="mode-normal">Normal</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-multiply" value="multiply"/>
+              <label for="mode-multiply">Multiply</label>
+              <br/> 
+              <input type="radio" name="mode-select" id="mode-screen" value="screen"/>
+              <label for="mode-screen">Screen</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-overlay" value="overlay"/>
+              <label for="mode-overlay">Overlay</label>
+              <br/> 
+              <input type="radio" name="mode-select" id="mode-darken" value="darken-only"/>
+              <label for="mode-darken">Darken Only</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-lighten" value="lighten-only"/>
+              <label for="mode-lighten">Lighten Only</label>
+              <br/> 
+              <input type="radio" name="mode-select" id="mode-dodge" value="dodge"/>
+              <label for="mode-dodge">Dodge</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-burn" value="burn"/>
+              <label for="mode-burn">Burn</label>
+              <br/> 
+            </div>
+            <div class="radio-block">
+              <input type="radio" name="mode-select" id="mode-hardlight" value="hard-light"/>
+              <label for="mode-hardlight">Hard Light</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-softlight" value="soft-light"/>
+              <label for="mode-softlight">Soft Light</label>
+              <br/> 
+              <input type="radio" name="mode-select" id="mode-difference" value="difference"/>
+              <label for="mode-difference">Difference</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-exclusion" value="exclusion"/>
+              <label for="mode-exclusion">Exclusion</label>
+              <br/> 
+              <input type="radio" name="mode-select" id="mode-hue" value="hue"/>
+              <label for="mode-hue">Hue</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-saturation" value="saturation"/>
+              <label for="mode-saturation">Saturation</label>
+              <br/> 
+              <input type="radio" name="mode-select" id="mode-color" value="color"/>
+              <label for="mode-color">Color</label>
+              <br/>
+              <input type="radio" name="mode-select" id="mode-luminosity" value="luminosity"/>
+              <label for="mode-luminosity">Luminosity</label>
+              <br/>
+            </div>
+            <p class="note">
+              <em>
+                (For a simple color change, Screen, Lighten Only, and Dodge are good choices)
+              </em>
+            </p>
+          </div>
+          <div class="control-block" id="button-block">
+            <input type="button" value="3. Colorize!" id="colorize-button"/>
+          </div>
+        </form>
       </div>
+    </div>
+    <div class="main-block" id="colorized-block">
+      <h3>Colorized on demand</h3>
       <div class="image-box">
-        <img src="http://localhost:8029/dodge/cc2172/0.73/R.png" />
-        <img src="http://localhost:8029/dodge/cc2172/0.73/xhatch.png" />
-        <img src="http://localhost:8029/dodge/cc2172/0.73/earthsym.png" />
+        <img id="img_R" src="http://localhost:8029/dodge/cc2172/0.73/R.png" />
+        <img id="img_xhatch" src="http://localhost:8029/dodge/cc2172/0.73/xhatch.png" />
+        <img id="img_earthsym" src="http://localhost:8029/dodge/cc2172/0.73/earthsym.png" />
       </div>
     </div>
   </body>
