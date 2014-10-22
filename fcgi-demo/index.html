@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="scripts/bgrins-spectrum-ed52c1c/spectrum.css" />
     <style type="text/css">
       * {
-        font-family: "Montserrat", sans-serif;
+        /* font-family: "Montserrat", sans-serif; */
+        font-family: "Fira Sans", sans-serif;
       }
       body {
         width: 84%;
@@ -19,23 +20,36 @@
       }
       div.main-block {
         display: inline-block;
-        margin: 1em auto;
+        vertical-align: top;
+        /* margin: 1em auto; */
       }
+      /*
       #base-block {
         float: left;
       }
       #colorized-block {
         float: right;
       }
+      */
+      #base-block, #colorized-block {
+        width: 28%;
+      }
       #control-wrapper {
-        padding: 3em 1em 2em 1em;
+        width: 36%;
+      }
+      #control-wrapper {
+        /* padding: 3em 1em 2em 1em; */
+        padding: 1em;
+        background-image: url('images/big-arrow.png');
+        background-repeat: no-repeat;
+        background-position: center;
       }
       div.image-box {
         /* display: inline-block; */
         vertical-align: middle;
         text-align: center;
         /* padding: 1.5em; */
-        padding: 0 1.5em;
+        padding: 1.5em;
         background-image: url('images/grid.png');
         background-repeat: repeat;
         border: 1px #909090 inset;
@@ -48,13 +62,28 @@
         text-align: center;
         margin-bottom: 1.5em;
       }
+      #base-block h3 {
+        color: #939393;
+      }
+      #colorized-block h3 {
+        color: #640000;
+      }
       img {
         margin: auto;
       }
       .control-block, .radio-block {
-        display: inline-block;
+        /* display: inline-block; */
         vertical-align: top;
       }
+      .control-block {
+        display: block;
+        width: 80%;
+        margin: 0 auto;
+      }
+      .radio-block {
+        display: inline-block;
+      }
+      /*
       #colorpicker-block {
         width: 32%;
       }
@@ -64,8 +93,10 @@
       #button-block {
         width: 22%;
       }
+      */
       #colorize-button {
-        background-color: #ff4040;
+        background-color: #a70000;
+        color: #ffffff;
         font-size: 108%;
         padding: .8em;
       }
@@ -111,6 +142,7 @@
           showAlpha: true,
           showInitial: true,
           showInput: true,
+          showButtons: false,
           clickoutFiresChange: true
         });
         $("#colorize-button").on("click", get_colorized_images);
@@ -130,15 +162,24 @@
     <div class="main-block" id="control-wrapper">
       <div class="control-box">
         <form>
-          <input id="colorpicker" class="control-block" id="colorpicker-block"/>
+          <div class="control-block" id="colorpicker-block">
+            <p>
+              <strong>1. Choose a color.</strong>
+            </p>
+            <input id="colorpicker"/>
+          </div>
           <div class="control-block" id="mode-select-block">
+            <!--
             <p>
               <img src="images/left.png" />
               1. Choose a color.
             </p>
+            -->
             <p>
+              <!--
               <img src="images/down.png" />
-              2. Choose a blend mode.
+              -->
+              <strong>2. Choose a blend mode.</strong>
             </p>
             <div class="radio-block">
               <input type="radio" name="mode-select" id="mode-normal" value="normal" checked="checked"/>
@@ -207,9 +248,9 @@
     <div class="main-block" id="colorized-block">
       <h3>Colorized on demand</h3>
       <div class="image-box">
-        <img id="img_R" src="http://localhost:8029/dodge/cc2172/0.73/R.png" />
-        <img id="img_xhatch" src="http://localhost:8029/dodge/cc2172/0.73/xhatch.png" />
-        <img id="img_earthsym" src="http://localhost:8029/dodge/cc2172/0.73/earthsym.png" />
+        <img id="img_R" src="http://localhost:8029/normal/000000/1.0/R.png" />
+        <img id="img_xhatch" src="http://localhost:8029/normal/000000/1.0/xhatch.png" />
+        <img id="img_earthsym" src="http://localhost:8029/normal/000000/1.0/earthsym.png" />
       </div>
     </div>
   </body>
