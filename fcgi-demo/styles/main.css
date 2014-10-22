@@ -1,0 +1,152 @@
+@font-face {
+    font-family: 'montserratbold';
+    src: url('../fonts/montserrat-bold/Montserrat-Bold-webfont.eot');
+    src: url('../fonts/montserrat-bold/Montserrat-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/montserrat-bold/Montserrat-Bold-webfont.woff') format('woff'),
+         url('../fonts/montserrat-bold/Montserrat-Bold-webfont.ttf') format('truetype'),
+         url('../fonts/montserrat-bold/Montserrat-Bold-webfont.svg#montserratbold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'montserratregular';
+    src: url('../fonts/montserrat-regular/Montserrat-Regular-webfont.eot');
+    src: url('../fonts/montserrat-regular/Montserrat-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/montserrat-regular/Montserrat-Regular-webfont.woff') format('woff'),
+         url('../fonts/montserrat-regular/Montserrat-Regular-webfont.ttf') format('truetype'),
+         url('../fonts/montserrat-regular/Montserrat-Regular-webfont.svg#montserratregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+
+* {
+  /* font-family: "Montserrat", sans-serif; */
+  font-family: "Fira Sans", sans-serif;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+#main-content {
+  width: 84%;
+  margin: 0 auto;
+}
+#headerbg {
+  height: 195px;
+  overflow: visible;
+  margin: 0;
+}
+#footer {
+  margin: 2em 0 0 0;
+  padding: .5em 0 1em 0;
+  font-size: 67%;
+  color: #ffffff;
+  text-align: center;
+}
+#headerbg, #footer {
+  width: 100%;
+  background: linear-gradient(to right, #001097, #191c32);
+}
+#logo-img {
+  margin-left: 48px;
+}
+p.section-title {
+  font-family: montserratregular, sans-serif;
+  color: #ffffff;
+  font-size: 200%;
+  float: right;
+  padding: .2em 1.5em 0 0;
+}
+h1 {
+  text-align: center;
+}
+#page-intro {
+  font-size: 88%;
+}
+div.main-block {
+  display: inline-block;
+  vertical-align: top;
+  /* margin: 1em auto; */
+}
+/*
+#base-block {
+  float: left;
+}
+#colorized-block {
+  float: right;
+}
+*/
+#base-block, #colorized-block {
+  width: 28%;
+}
+#control-wrapper {
+  width: 36%;
+}
+#control-wrapper {
+  /* padding: 3em 1em 2em 1em; */
+  padding: 1em;
+  background-image: url('images/big-arrow.png');
+  background-repeat: no-repeat;
+  background-position: center;
+}
+div.image-box {
+  /* display: inline-block; */
+  vertical-align: middle;
+  text-align: center;
+  /* padding: 1.5em; */
+  padding: 1.5em;
+  background-image: url('../images/grid.png');
+  background-repeat: repeat;
+  border: 1px #909090 inset;
+}
+div.image-box img {
+  display: block;
+  margin: 1em auto;
+}
+h3 {
+  text-align: center;
+  margin-bottom: 1.5em;
+}
+#base-block h3 {
+  color: #939393;
+}
+#colorized-block h3 {
+  color: #640000;
+}
+img {
+  margin: auto;
+}
+.control-block, .radio-block {
+  /* display: inline-block; */
+  vertical-align: top;
+}
+.control-block {
+  display: block;
+  width: 80%;
+  margin: 0 auto;
+}
+.radio-block {
+  display: inline-block;
+}
+/*
+#colorpicker-block {
+  width: 32%;
+}
+#mode-select-block {
+  width: 40%;
+}
+#button-block {
+  width: 22%;
+}
+*/
+#colorize-button {
+  background-color: #a70000;
+  color: #ffffff;
+  font-size: 108%;
+  padding: .8em;
+}
+p.note {
+  font-size: 75%;
+}
