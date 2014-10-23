@@ -71,30 +71,31 @@
 ;; delegate only requests for nonexistent images to this program.
 (define (save-and-send path out env)
   (handle-exceptions
-    _
-    (http-error out 500)
+    exn
+    (begin
+      (log-message "EXCEPTION: ~A\n" exn)
+      (http-error out 500))
     (let ((path-data (parse-colorized-image-path path)))
       (match path-data
         [(dest-path* mode color alpha sub-path)
           (let* ((save-image
-                   (and (not (get-environment-variable "QOLORIZER_NO_SAVE"))
-                        (not (env "QOLORIZER_NO_SAVE" #f))
+                   (and (not (env "QOLORIZER_NO_SAVE" #f))
                         (*save-image*)))
                  (dest-path
                    (if save-image
                      (let ((image-path
-                             (or (get-environment-variable "QOLORIZER_IMAGE_PATH")
-                                 (env "QOLORIZER_IMAGE_PATH" #f)
+                             (or (env "QOLORIZER_IMAGE_PATH" #f)
                                  (*image-path*))))
                         (make-pathname image-path dest-path*))
                       (create-temporary-file "png")))
                  (base-path
                    (base-image-path sub-path)))
+	    ; (log-message "BASE-PATH: ~A\n" base-path)
             (if (file-exists? base-path)
               (begin
                 (create-directory (pathname-directory dest-path) #t)
                 ; The following is just for debugging purposes
-                (log-message "Generated '~A' for request '~A'\n" dest-path path)
+                ;(log-message "Generated '~A' for request '~A'\n" dest-path path)
                 (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path)
                 (let* ((response-data
                         (with-input-from-file dest-path read-all #:binary))
@@ -114,12 +115,15 @@
               (http-error out 404)))]
         [#:invalid-path
           (http-error out 400)]
-        [_
-          (http-error out 500)])))
+        [other
+	  (begin
+	    (log-message "What? ~A\n" other)
+	    (http-error out 500))])))
   #t)
     
 (define (handle-request in out err env)
-  (let ((path (alist-ref "REQUEST_URI" (env) string=?)))
+  ; (let ((path (alist-ref "REQUEST_URI" (env) string=?)))
+  (let ((path (alist-ref "PATH_INFO" (env) string=?)))
     (save-and-send (deslash path) out env)))
     
    
@@ -145,9 +149,10 @@
          ; Not totally sure about the logic here, but I am giving precedence to the environment
          ; var under the assumption that it will be passed in by an app container like uwsgi.
          (image-path
-           (if (null? rest)
-             (current-directory)
-             (car rest)))
+	   (or (get-environment-variable "QOLORIZER_IMAGE_PATH")
+	       (if (null? rest)
+		 (current-directory)
+		 (car rest))))
          (unix-socket-var
            (get-environment-variable "QOLORIZER_UNIX_SOCKET"))
          (unix-socket
@@ -164,10 +169,15 @@
                           (if tcp-port-arg
                             (string->number tcp-port-arg)
                             3429)))
-         (dont-save (alist-ref 'no-save parsed-args))
-         (log-file (alist-ref 'log-file parsed-args))
+         (dont-save
+	   (or (get-environment-variable "QOLORIZER_NO_SAVE")
+	       (alist-ref 'no-save parsed-args)))
+         (log-file
+           (or (get-environment-variable "QOLORIZER_LOG_FILE")
+               (alist-ref 'log-file parsed-args)))
          (debug
-           (or (alist-ref 'debug parsed-args)
+           (or (get-environment-variable "QOLORIZER_DEBUG")
+               (alist-ref 'debug parsed-args)
                log-file)))
     (when debug (*debug* #t))
     (when log-file (*log-file* log-file))
