@@ -31,7 +31,7 @@ body {
 }
 #main-content {
   width: 84%;
-  margin: 0 auto;
+  margin: 3em auto 0 auto;
 }
 #headerbg {
   height: 195px;
@@ -87,7 +87,7 @@ div.main-block {
 #control-wrapper {
   /* padding: 3em 1em 2em 1em; */
   padding: 1em;
-  background-image: url('images/big-arrow.png');
+  background-image: url('/images/big-arrow.png');
   background-repeat: no-repeat;
   background-position: center;
 }
