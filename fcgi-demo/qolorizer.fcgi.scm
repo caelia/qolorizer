@@ -149,10 +149,10 @@
          ; Not totally sure about the logic here, but I am giving precedence to the environment
          ; var under the assumption that it will be passed in by an app container like uwsgi.
          (image-path
-	   (or (get-environment-variable "QOLORIZER_IMAGE_PATH")
-	       (if (null? rest)
-		 (current-directory)
-		 (car rest))))
+	       (or (get-environment-variable "QOLORIZER_IMAGE_PATH")
+	           (if (null? rest)
+                   (current-directory)
+                   (car rest))))
          (unix-socket-var
            (get-environment-variable "QOLORIZER_UNIX_SOCKET"))
          (unix-socket
