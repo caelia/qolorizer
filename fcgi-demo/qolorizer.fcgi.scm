@@ -48,7 +48,9 @@
   (foldl make-pathname (->string (car segments)) (cdr segments)))
 
 (define (parse-colorized-image-path pathstr)
+  (log-message "[parse-colorized-image-path] pathstr: ~A\n" pathstr)
   (let ((segments (uri-path (uri-reference pathstr))))
+    (log-message "segments: ~A\n" segments)
     (match segments
       [(mode color alpha . rest)
        (list (list->pathname segments)
@@ -87,15 +89,18 @@
                              (or (env "QOLORIZER_IMAGE_PATH" #f)
                                  (*image-path*))))
                         (make-pathname image-path dest-path*))
-                      (create-temporary-file "png")))
+                      ;(create-temporary-file "png")))
+                      (let ((tempfile (create-temporary-file "png")))
+                        (log-message "Temp file is ~A\n" tempfile)
+                        tempfile)))
                  (base-path
                    (base-image-path sub-path)))
-	    ; (log-message "BASE-PATH: ~A\n" base-path)
+	    (log-message "BASE-PATH: ~A\n" base-path)
             (if (file-exists? base-path)
               (begin
                 (create-directory (pathname-directory dest-path) #t)
                 ; The following is just for debugging purposes
-                ;(log-message "Generated '~A' for request '~A'\n" dest-path path)
+                (log-message "Generated '~A' for request '~A'\n" dest-path path)
                 (colorize (mk-blend-op color blend-mode: mode alpha: alpha) base-path dest-path)
                 (let* ((response-data
                         (with-input-from-file dest-path read-all #:binary))
@@ -170,8 +175,8 @@
                             (string->number tcp-port-arg)
                             3429)))
          (dont-save
-	   (or (get-environment-variable "QOLORIZER_NO_SAVE")
-	       (alist-ref 'no-save parsed-args)))
+	       (or (get-environment-variable "QOLORIZER_NO_SAVE")
+	           (alist-ref 'no-save parsed-args)))
          (log-file
            (or (get-environment-variable "QOLORIZER_LOG_FILE")
                (alist-ref 'log-file parsed-args)))
